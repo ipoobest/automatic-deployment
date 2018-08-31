@@ -22,7 +22,6 @@ from booking.views.authentication_view import AuthenticationView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('poobest/', admin.site.urls),
     path('booking/', include('booking.urls')),
     path('agent-transport/', include('agent_transport.urls')),
     path('customer/', include('customer.urls')),
