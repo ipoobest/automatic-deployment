@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block title %} NDD Agent Transport {% endblock %}
+        
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/style-table.css' %}" />
+    <script src="{% static 'js/fixed-header.js' %}"></script>
+    <script src="{% static 'js/add-form.js' %}"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script>
+        window.setTimeout(function() {
+            $(".alert").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove(); 
+            });
+        }, 2000);
+
+
+        $(function() {
+            $('.no-collapsable').on('click', function (e) {
+                e.stopPropagation();
+            });
+        });
+
+        $(function() {
+            $("#table-cont").css({top: $("#filter-date").offset().top + 60 })
+
+            $(".class-collapse").css({width: $( window ).width()})
+
+            $('select[name="filter_by"]').change(function() {
+                if($(this).val() == "month"){
+                    $('input#id_date').attr("type", "month")
+                }
+                else {
+                    $('input#id_date').attr("type", "date")
+                }
+                
+            });
+
+            $("button.action").click(function(){
+                
+                if($("input.check:checked").length != 0) {
+                    $("input.check:checked").each(function() {
+                        
+                        var input = $("<input>")
+                                    .attr("type", "hidden")
+                                    .attr("name", "check").val($(this).val());
+                        $('form#action').append($(input));
+                    });
+                }
+                else {
+                    alert("เลือกงานที่ต้องการ");
+                    return false;
+                }
+                
+                var action = $('select[name="action"]').val();
+                
+                if(action == 'delete'){
+                    if (confirm('Are you sure?')){
+                        $('form#action').attr("action", "{% url 'agent-transport-delete-multiple' %}");
+                        $('form#action').submit();
+                    }
+                }
+                return false;
+
+            });
+
+            $("#checkAll").click(function(){
+                $('input.check:checkbox').not(this).prop('checked', this.checked);
+            });
+
+        });
+        
+    </script>
+{% endblock %}
+        
+{% block content %}
+<br>
+    {% for message in messages %}
+
+        <div class="fixed-top alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+        <div id="filter-date" class="container col-12">     
+            <div class="row">
+                <div class="col">
+                    <form name="agent-transport-filter-sort" method="GET" action="{% url 'agent-transport-table' %}" class="form-inline">
+                        {% csrf_token %}
+                        <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <select name="filter_by" class="btn" style="background-color: #CED4DA;">
+                                        <option value="date" class="bg-white">Date</option>
+                                        <option value="month" class="bg-white" {% if filter_by == 'month' %}selected{% endif %}>Month</option>
+                                    </select>
+    
+                                </div>
+    
+                            {% if filter_by == 'month' %}
+                                <input id="id_date" name="date" type="month" class="form-control mr-2" value="{{ date }}">
+                            {% else %}
+                                <input id="id_date" name="date" type="date" class="form-control mr-2" value="{{ date }}">
+                            {% endif %}
+
+                        </div>
+    
+                        <button type="submit" class="btn btn-primary">OK</button>
+                    </form>
+                </div>
+
+                <div class="col text-center">
+                    <select name="action" class="custom-select col-3 mr-1">
+                        <option value=""> -------- </option>
+                        <option value="delete"> ลบ </option>
+                    </select>
+                    <form id="action" method="POST" class="d-inline"> 
+                            {% csrf_token %}
+                            <input type="hidden" name="date" value="{{ date }}">
+                            <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                        <button class="btn btn-primary action">GO</button>
+                    </form>
+                </div>
+
+                <div class="col text-right">
+                    <a class="btn btn-primary mr-1" href="#" role="button" onclick="document.getElementById('edit-filter').submit();"><i class="fa fa-edit"></i>&nbsp;Edit</a>
+                    <form id="edit-filter" method="GET" action="{% url 'agent-transport-edit' %}" style="display:none;">
+                        <input type="hidden" name="date" value="{{ date }}">
+                        <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                    </form>
+                    <a class="btn btn-primary" href="{% url 'agent-transport-add' %}" role="button"><i class="fa fa-plus"></i>&nbsp;Add</a>
+                </div>
+            </div>
+        </div>
+    {% if agent_transports %}
+        <div id='table-cont' class="table-cont"> 
+        <table class="table-hover" id="accordion table-responsive">
+            <thead class="text-nowrap bg-lightgray"> 
+                <th><input type="checkbox" id="checkAll"></th>
+                <th>PRINT</th>
+                <th>DATE</th>
+                <th>PRINCIPAL</th>
+                <th>SHIPPER</th>
+                <th>AGENT</th>
+                <th>SIZE</th>
+                <th>BOOKING</th>
+
+                <th>TR</th>
+                <th>FM</th>
+                <th>TR</th>
+                <th>TO</th>
+
+                <th>CONTAINER 1</th>
+                <th>CONTAINER 2</th>
+
+                <th>REF.</th>
+                <th>REMARK</th>
+                <th>เลขที่ใบงาน</th>
+
+                <th>PICK UP</th>
+                <th>RETURN</th>
+            </thead> 
+            <tbody> 
+                {% for agent_transport in agent_transports %}
+                    {% if agent_transport.cancel == '1' %}
+                        <tr class="bg-secondary collapsed" data-toggle="collapse" data-target="#accordion{{ agent_transport.pk }}">
+                    {% elif not agent_transport.return_tr %}
+                        <tr class="alert-warning collapsed" data-toggle="collapse" data-target="#accordion{{ agent_transport.pk }}">
+                    {% else %}
+                        <tr class="collapsed" data-toggle="collapse" data-target="#accordion{{ agent_transport.pk }}">
+                    {% endif %}
+                            <td class="p-0  no-collapsable toggle-color w-1">
+                                <input type="checkbox" class="check" name="check" value="{{ agent_transport.pk }}">
+                                <!-- <label class="custom-control-label" for="cut{{ booking.pk }}"></label> -->
+                            </td>
+                            
+                            <td class="p-0 w-1">
+                                <a class="btn btn-link d-block" id="dropdownMenuPrint" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fa fa-print font-weight-bold"></i>
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuPrint">
+                                    <a class="dropdown-item no-collapsable" href="{% url 'agent-transport-print' pk=agent_transport.pk template='full' %}">Full</a>
+                                    <a class="dropdown-item no-collapsable" href="{% url 'agent-transport-print' pk=agent_transport.pk template='forward' %}">Forward</a>
+                                    <a class="dropdown-item no-collapsable" href="{% url 'agent-transport-print' pk=agent_transport.pk template='backward' %}">Backward</a>
+                                </div>
+                            </td>
+                            
+                            <td class="text-nowrap px-3">{{ agent_transport.date | date:'d/m/y' }}</td>
+                            <td class="no-collapsable text-left px-2"><div  class="long-text">{{ agent_transport.principal }}</div></td>
+                            <td class="no-collapsable text-left px-2"><div  class="long-text">{{ agent_transport.shipper }}</div></td>
+                            <td class="no-collapsable text-left px-2"><div  class="long-text">{{ agent_transport.agent }}</div></td>
+                            <td class="text-nowrap">{{ agent_transport.size }}</td>
+                            {% if agent_transport.cancel == '1' %}
+                                <td class="text-nowrap">
+                            {% else %}
+                                <td style="background-color: {{ agent_transport.booking_color }}" class="text-nowrap">
+                            {% endif %}
+                                    {{ agent_transport.booking_no }}
+                                </td>
+
+                            <td class="text-nowrap">{{ agent_transport.pickup_tr }}</td>
+                            <td class="text-nowrap">{{ agent_transport.pickup_from }}</td>
+                            <td class="text-nowrap">{{ agent_transport.return_tr }}</td>
+                            <td class="text-nowrap">{{ agent_transport.return_to }}</td>
+
+                            <td class="text-nowrap">{{ agent_transport.container_1 }}</td>
+                            <td class="text-nowrap">{{ agent_transport.container_2 }}</td>
+
+                            <td class="no-collapsable text-left px-2"><div class="long-text">{{ agent_transport.ref }}</div></td>
+                            <td class="no-collapsable text-left px-2"><div  class="long-text">{{ agent_transport.remark }}</div></td>
+
+                            <td class="text-nowrap">{{ agent_transport.work_id }}</td>
+                            
+                            <td class="text-nowrap px-3">{{ agent_transport.pickup_date | date:'d/m/y' }}</td>
+                            <td class="text-nowrap px-3">{{ agent_transport.return_date | date:'d/m/y' }}</td>
+                        </tr>
+                        <tr class="bg-light p-0">
+                            <td colspan="26" class="hiddenRow">
+                                <!-- <div id="accordion{{ agent_transport.pk }}" class="collapse"  data-parent="#accordion"> -->
+                                <div id="accordion{{ agent_transport.pk }}" class="collapse">
+                                    <div class="class-collapse">
+                                    <div class="float-left ml-sm-2 mt-2">
+                                        <button class="btn btn-danger" href="#" onclick="document.getElementById('delete-form{{ agent_transport.pk }}').submit();"><i class="fa fa-trash"></i>&nbsp;Delete</button>
+                                        <form id="delete-form{{ agent_transport.pk }}" method="GET" action="{% url 'agent-transport-delete' pk=agent_transport.pk %}" style="display:none;">
+                                            <input type="hidden" name="date" value="{{ date }}">
+                                            <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                                        </form>
+                                    </div>
+                                    <div class="container w-25 pt-2">
+                                        <form method="POST" action="{% url 'agent-transport-update' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="pk" value="{{ agent_transport.pk }}">
+                                            <input type="hidden" name="date_filter" value="{{ date }}">
+                                            <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                                            <fieldset>
+                                                <legend>ADDRESS</legend>
+                                                <table class="container table-borderless" style="border-collapse: separate; border:none;">
+                                                    <tr class="bg-light">
+                                                        <td class="w-1">
+                                                            {% if agent_transport.address == 'shipper' %}
+                                                                <input type="radio" name="address{{ agent_transport.pk }}" onchange="updateradio({{ agent_transport.pk }});" value="shipper" checked>
+                                                            {% else %}
+                                                                <input type="radio" name="address{{ agent_transport.pk }}" onchange="updateradio({{ agent_transport.pk }});" value="shipper">
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-left">
+                                                            Shipper
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="bg-light">
+                                                        <td class="w-1">
+                                                        {% if agent_transport.address == 'other' %}
+                                                            <input type="radio" name="address{{ agent_transport.pk }}" onchange="updateradio({{ agent_transport.pk }});" value="other" checked>
+                                                        </td>
+                                                        <td class="text-left">
+                                                            Other
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="bg-light">
+                                                        <td class="w-1"></td>
+                                                        <td>
+                                                            <textarea class="form-control" rows="3" id="id_address_other{{ agent_transport.pk }}" name="address_other" style="font-size: 12px;">{{ agent_transport.address_other }}</textarea>
+                                                        {% else %}
+                                                            <input type="radio" name="address{{ agent_transport.pk }}" onchange="updateradio({{ agent_transport.pk }});" value="other">
+                                                        </td>
+                                                        <td class="text-left">
+                                                            Other
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="bg-light">
+                                                        <td class="w-1"></td>
+                                                        <td>
+                                                            <textarea class="form-control" rows="3" id="id_address_other{{ agent_transport.pk }}" name="address_other" style="font-size: 12px;" disabled>{{ agent_transport.address_other }}</textarea>
+                                                        {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="bg-light">
+                                                        <td class="w-1">
+                                                            {% if agent_transport.address == 'none' %}
+                                                                <input type="radio" name="address{{ agent_transport.pk }}" onchange="updateradio({{ agent_transport.pk }});" value="none" checked>
+                                                            {% else %}
+                                                                <input type="radio" name="address{{ agent_transport.pk }}" onchange="updateradio({{ agent_transport.pk }});" value="none">
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-left">
+                                                            None
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </fieldset>
+                                            <div class="float-left">
+                                                <input type="hidden" name="cancel" value=0 />
+                                                {% if agent_transport.cancel == '1' %}
+                                                    <input type="checkbox" id="cancel" name="cancel" value=1 checked>
+                                                {% else %}
+                                                    <input type="checkbox" id="cancel" name="cancel" value=1>
+                                                {% endif %}
+                                                <label class="cancel-label" for="cancel">&nbsp;CANCEL</label>
+                                            </div>
+                                            <div class="float-right mb-4">
+                                                <button type="submit" class="btn btn-primary">SAVE</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+            </tbody> 
+        </table>
+    </div>
+    {% else %}
+        <h1 class="text-center text-secondary mt-3"> ไม่พบข้อมูล </h1>
+    {% endif %}
+
+        
+{% endblock %}
+

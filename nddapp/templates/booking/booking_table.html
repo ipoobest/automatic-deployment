@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block title %} NDD Booking {% endblock %}
+        
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/style-table.css' %}" />
+    <script src="{% static 'js/fixed-header.js' %}"></script>
+    <script src="{% static 'js/add-form.js' %}"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+
+    <script>
+        window.setTimeout(function() {
+            $(".alert").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove(); 
+            });
+        }, 2000);
+
+
+        $(function() {
+            $('.no-collapsable').on('click', function (e) {
+                e.stopPropagation();
+            });
+
+            $("#table-cont").css({top: $("#filter-date").offset().top + 60 });
+
+            $(".class-collapse").css({width: $( window ).width()});
+
+            $("#checkAll").click(function(){
+                $('input.check:checkbox').not(this).prop('checked', this.checked);
+            });
+        });
+        
+            
+        $(function() {
+            $("button.action").click(function(){
+                
+                if($("input.check:checked").length != 0) {
+                    $("input.check:checked").each(function() {
+                        
+                        var input = $("<input>")
+                                    .attr("type", "hidden")
+                                    .attr("name", "check").val($(this).val());
+                        $('form#action').append($(input));
+                    });
+                }
+                else {
+                    alert("เลือกงานที่ต้องการ");
+                    return false;
+                }
+                
+                var action = $('select[name="action"]').val();
+                
+                if(action == 'time'){
+                    $('form#action').attr("action", "{% url 'booking-time' %}");
+                    $('form#action').submit();
+                }
+                else if(action == 'delete'){
+                    if (confirm('Are you sure?')){
+                        $('form#action').attr("action", "{% url 'booking-delete-multiple' %}");
+                        $('form#action').submit();
+                    }
+                }
+                return false;
+
+            });
+
+            $('select[name="filter_by"]').change(function() {
+                if($(this).val() == "month"){
+                    $('input#id_date').attr("type", "month")
+                }
+                else {
+                    $('input#id_date').attr("type", "date")
+                }
+                
+            });
+
+            // $('a.filter-date').click(function() {
+            //     $('input#id_date').attr("type", "date");
+            //     $("#filterType").html('Date');
+            // });
+
+            // $('a.filter-month').click(function() {
+            //     $('input#id_date').attr("type", "month");
+            //     $("#filterType").html('Month');
+            // });
+        });
+        
+    </script>
+{% endblock %}
+        
+{% block content %}
+<div class="pages">
+<br>
+    {% for message in messages %}
+
+        <div class="fixed-top alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+    <!-- <div class="position-sticky" style="top:0px; bottom:0;"> -->
+    <div id="filter-date" class="container col-12" style="height: auto;">
+        <div class="row">
+
+            <div class="col">
+                <form name="booking-filter-sort" method="GET" action="{% url 'booking-table' %}" class="form-inline">
+                    {% csrf_token %}
+                    <div class="input-group">
+                            <div class="input-group-prepend">
+                                <select name="filter_by" class="btn" style="background-color: #CED4DA;">
+                                    <option value="date" class="bg-white">Date</option>
+                                    <option value="month" class="bg-white" {% if filter_by == 'month' %}selected{% endif %}>Month</option>
+                                </select>
+
+                            </div>
+                        <!-- <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                        </div> -->
+
+                        {% if filter_by == 'month' %}
+                            <input id="id_date" name="date" type="month" class="form-control mr-2" value="{{ date }}">
+                        {% else %}
+                            <input id="id_date" name="date" type="date" class="form-control mr-2" value="{{ date }}">
+                        {% endif %}
+                        <!-- <div class="input-group-append"> -->
+                                
+                            <!-- </div> -->
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">OK</button>
+                </form>
+            </div>
+
+            <div class="col text-center">
+                <select name="action" class="custom-select col-3 mr-1">
+                    <option value=""> -------- </option>
+                    <option value="time"> ลงเวลา </option>
+                    <option value="delete"> ลบ </option>
+                </select>
+                <form id="action" method="POST" class="d-inline"> 
+                        {% csrf_token %}
+                        <input type="hidden" name="date" value="{{ date }}">
+                        <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                    <button class="btn btn-primary action">GO</button>
+                </form>
+            </div>
+            
+            <div class="col text-right">
+                <button class="btn btn-primary mr-1" onclick="document.getElementById('edit-filter').submit();"><i class="fa fa-edit"></i>&nbsp;Edit</button>
+                <form id="edit-filter" method="GET" action="{% url 'booking-edit' %}" style="display:none;">
+                    <input type="hidden" name="date" value="{{ date }}">
+                    <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                </form>
+                <a class="btn btn-primary" href="{% url 'booking-add' %}" role="button"><i class="fa fa-plus"></i>&nbsp;Add</a>
+            </div>
+            
+        </div>
+    </div>
+    {% if bookings %}
+        <!-- <div class='table-cont' id='table-cont'> -->
+    <!-- <div class="container"> -->
+        <!-- <div class="row"> --> 
+        <!-- <div class="position-relative h-75">  -->
+        <div id='table-cont' class="table-cont table-responsive"> 
+        <table class="table-hover" id="accordion">
+            <thead class="text-nowrap bg-lightgray"> 
+                <th><input type="checkbox" id="checkAll"></th>
+                <!-- <th>EDIT</th> -->
+                <th>PRINT</th>
+                <th>TIME</th>
+                <th>DATE</th>
+                <th>PRINCIPAL</th>
+                <th>SHIPPER</th>
+                <th>AGENT</th>
+                <th>SIZE</th>
+                <th>BOOKING</th>
+
+                <th>TR</th>
+                <th>FM</th>
+                <th>TR</th>
+                <th>FACTORY</th>
+                <th>TR</th>
+                <th>TR</th>
+                <th>TO</th>
+
+                <th>CONTAINER NO</th>
+                <th>SEAL NO</th>
+                <th colspan=2>CLOSING (DATE / TIME)</th>
+
+                <th>REF.</th>
+                <th>REMARK</th>
+                <th>เลขที่ใบงาน</th>
+
+                <th>PICK UP</th>
+                <th>FACTORY</th>
+                <th>RETURN</th>
+            </thead> 
+            <tbody> 
+                {% for booking in bookings %}
+                    {% if booking.cancel == '1' %}
+                        <tr class="bg-secondary collapsed" data-toggle="collapse" data-target="#accordion{{ booking.pk }}">
+                    {% elif booking.closing_date < today.date and not booking.return_tr %}
+                        <tr class="bg-danger collapsed" data-toggle="collapse" data-target="#accordion{{ booking.pk }}">
+                    {% elif booking.closing_date <= tmr.date and not booking.return_tr %}
+                        <tr class="alert-danger collapsed" data-toggle="collapse" data-target="#accordion{{ booking.pk }}">
+                    {% elif booking.date <= today.date and not booking.return_tr %}
+                        <tr class="alert-warning collapsed" data-toggle="collapse" data-target="#accordion{{ booking.pk }}">
+                    {% else %}
+                        <tr class="collapsed" data-toggle="collapse" data-target="#accordion{{ booking.pk }}">
+                    {% endif %}
+                            <td class="p-0  no-collapsable toggle-color w-1">
+                                <input type="checkbox" class="check" name="check" value="{{ booking.pk }}">
+                                <!-- <label class="custom-control-label" for="cut{{ booking.pk }}"></label> -->
+                            </td>
+                            <!-- <td class="p-0 toggle-icon w-1">
+                                <i class="fa"></i>
+                            </td> -->
+                            
+                            <td class="p-0 w-1">
+                                <a class="btn btn-link d-block" id="dropdownMenuPrint" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fa fa-print font-weight-bold"></i>
+                                </a>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuPrint">
+                                    <a class="dropdown-item no-collapsable" href="{% url 'booking-print' pk=booking.pk template='full' %}">Full</a>
+                                    <a class="dropdown-item no-collapsable" href="{% url 'booking-print' pk=booking.pk template='forward' %}">Forward</a>
+                                    <a class="dropdown-item no-collapsable" href="{% url 'booking-print' pk=booking.pk template='backward' %}">Backward</a>
+                                </div>
+                            </td>
+
+
+                            <td class="text-nowrap">{{ booking.time }}</td>
+                            
+                            <td class="text-nowrap px-3">{{ booking.date | date:'d/m/y' }}</td>
+                            <td class="no-collapsable text-left px-2"><div class="long-text">{{ booking.principal }}</div></td>
+                            <td class="no-collapsable text-left px-2"><div class="long-text">{{ booking.shipper }}</div></td>
+                            <td class="no-collapsable text-left px-2"><div class="long-text">{{ booking.agent }}</div></td>
+                            <td class="text-nowrap">{{ booking.size }}</td>
+                            {% if booking.cancel == '1' %}
+                                <td class="text-nowrap">
+                            {% else %}
+                                <td style="background-color: {{ booking.booking_color }}" class="text-nowrap">
+                            {% endif %}
+                                    {{ booking.booking_no }}
+                                </td>
+
+                            <td class="text-nowrap">{{ booking.pickup_tr }}</td>
+                            <td class="text-nowrap">{{ booking.pickup_from }}</td>
+                            <td class="text-nowrap">{{ booking.forward_tr }}</td>
+                            <td class="text-nowrap">{{ booking.factory }}</td>
+                            <td class="text-nowrap">{{ booking.backward_tr }}</td>
+                            <td class="text-nowrap">{{ booking.return_tr }}</td>
+                            <td class="text-nowrap">{{ booking.return_to }}</td>
+
+                            <td class="text-nowrap">{{ booking.container_no }}</td>
+                            <td class="text-nowrap">{{ booking.seal_no }}</td>
+                            {% if booking.closing_date %}
+                                <td class="text-nowrap px-2">{{ booking.closing_date | date:'d/m/y' }}</td>
+                            {% else %}
+                                <td class="text-nowrap">-</td>
+                            {% endif %}
+                            <td class="text-nowrap">{{ booking.closing_time }}</td>
+                            <td class="no-collapsable text-left px-2"><div class="long-text">{{ booking.ref }}</div></td>
+                            <td class="no-collapsable text-left px-2"><div  class="long-text">{{ booking.remark }}</div></td>
+
+                            <td class="text-nowrap">{{ booking.work_id }}</td>
+                            
+                            <td class="text-nowrap px-3">{{ booking.pickup_date | date:'d/m/y' }}</td>
+                            {% if booking.factory_date != booking.return_date and booking.cancel != '1' %}
+                                <td class="text-nowrap bg-info px-3">
+                                    {{ booking.factory_date | date:'d/m/y' }}
+                                </td>
+                                <td class="text-nowrap bg-info px-3">
+                                    {{ booking.return_date | date:'d/m/y' }}
+                                </td>
+                            {% else %}
+                                <td class="text-nowrap px-3">
+                                    {{ booking.factory_date | date:'d/m/y' }}
+                                </td>
+                                <td class="text-nowrap px-3">
+                                    {{ booking.return_date | date:'d/m/y' }}
+                                </td>
+                            {% endif %}
+                        </tr>
+                        <!-- <tr id="accordion{{ booking.pk }}" class="collapse bg-light"> -->
+                        <tr class="bg-light p-0">
+                            <!-- <td colspan="4"></td> -->
+                            <!-- <td colspan="18"> -->
+                            <td colspan="26" class="hiddenRow">
+                                <!-- <div id="accordion{{ booking.pk }}" class="collapse"  data-parent="#accordion"> -->
+                                <div id="accordion{{ booking.pk }}" class="collapse">
+                                    <div class="class-collapse">
+                                    <div class="float-left ml-sm-2 mt-2">
+                                        <button class="btn btn-danger" href="#" onclick="document.getElementById('delete-form{{ booking.pk }}').submit();"><i class="fa fa-trash"></i>&nbsp;Delete</button>
+                                        <form id="delete-form{{ booking.pk }}" method="GET" action="{% url 'booking-delete' pk=booking.pk %}" style="display:none;">
+                                            <input type="hidden" name="date" value="{{ date }}">
+                                            <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                                        </form>
+                                    </div>
+                                    <div class="container w-25 pt-2">
+                                        <form method="POST" action="{% url 'booking-update' %}">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="pk" value="{{ booking.pk }}">
+                                            <input type="hidden" name="date_filter" value="{{ date }}">
+                                            <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                                            <table class="w-100 mb-2" style="border-collapse: separate; border:none;">
+                                                <tr class="bg-white">
+                                                    <td class="w-20 bg-lightgray">VESSEL</td>
+                                                    <td><input class="form-control" name="vessel" value="{{ booking.vessel }}"></td>
+                                                </tr>
+                                                <tr class="bg-white">
+                                                    <td class="w-20 bg-lightgray">PORT</td>
+                                                    <td><input class="form-control" name="port" value="{{ booking.port }}"></td>
+                                                </tr>
+                                            </table>
+                                        
+                                            <fieldset>
+                                                <legend>ADDRESS</legend>
+                                            <!-- <div class="form-check mb-3"> -->
+                                                <table class="container table-borderless" style="border-collapse: separate; border:none;">
+                                                    <tr class="bg-light">
+                                                        <td class="w-1">
+                                                            {% if booking.address == 'shipper' %}
+                                                                <input type="radio" name="address{{ booking.pk }}" onchange="updateradio({{ booking.pk }});" value="shipper" checked>
+                                                            {% else %}
+                                                                <input type="radio" name="address{{ booking.pk }}" onchange="updateradio({{ booking.pk }});" value="shipper">
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-left">
+                                                            Shipper
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="bg-light">
+                                                        <td class="w-1">
+                                                        {% if booking.address == 'other' %}
+                                                            <input type="radio" name="address{{ booking.pk }}" onchange="updateradio({{ booking.pk }});" value="other" checked>
+                                                        </td>
+                                                        <td class="text-left">
+                                                            Other
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="bg-light">
+                                                        <td class="w-1"></td>
+                                                        <td>
+                                                            <textarea class="form-control" rows="3" id="id_address_other{{ booking.pk }}" name="address_other" style="font-size: 12px;">{{ booking.address_other }}</textarea>
+                                                        {% else %}
+                                                            <input type="radio" name="address{{ booking.pk }}" onchange="updateradio({{ booking.pk }});" value="other">
+                                                        </td>
+                                                        <td class="text-left">
+                                                            Other
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="bg-light">
+                                                        <td class="w-1"></td>
+                                                        <td>
+                                                            <textarea class="form-control" rows="3" id="id_address_other{{ booking.pk }}" name="address_other" style="font-size: 12px;" disabled>{{ booking.address_other }}</textarea>
+                                                        {% endif %}
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="bg-light">
+                                                        <td class="w-1">
+                                                            {% if booking.address == 'none' %}
+                                                                <input type="radio" name="address{{ booking.pk }}" onchange="updateradio({{ booking.pk }});" value="none" checked>
+                                                            {% else %}
+                                                                <input type="radio" name="address{{ booking.pk }}" onchange="updateradio({{ booking.pk }});" value="none">
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-left">
+                                                            None
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </fieldset>
+                                            <div class="float-left">
+                                                <input type="hidden" name="cancel" value=0 />
+                                                {% if booking.cancel == '1' %}
+                                                    <input type="checkbox" id="cancel" name="cancel" value=1 checked>
+                                                {% else %}
+                                                    <input type="checkbox" id="cancel" name="cancel" value=1>
+                                                {% endif %}
+                                                <label class="cancel-label" for="cancel">&nbsp;CANCEL</label>
+                                            </div>
+                                            <div class="float-right mb-4">
+                                                <button type="submit" class="btn btn-primary">SAVE</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                </div>
+                            </td>
+                            <!-- <td colspan="6" class="hiddenRow"></td> -->
+                        </tr>
+                    {% endfor %}
+            </tbody> 
+        </table>
+    </div>
+    </div>
+<!-- </div> -->
+{% else %}
+    <h1 class="text-center text-secondary mt-3"> ไม่พบข้อมูล </h1>
+{% endif %}
+
+        
+{% endblock %}
+

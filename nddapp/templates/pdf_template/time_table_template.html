@@ -1,0 +1,222 @@
+{% load staticfiles %}
+
+
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <title>Time Print</title>
+  
+  <link rel="stylesheet" href="{{ static_dir }}\css\style-pdf.css" />
+
+  <style type='text/css'>
+    /* Size and frame */
+    @page {
+      size: a4 landscape;
+      /* margin: 10pt; */
+
+      @frame { 
+        -pdf-frame-content: head_table;
+        left: 0.25in; width: 11.2in; top: 0.5in; height: auto;
+      }
+
+      @frame { 
+        left: 0.25in; width: 11.2in; top: 1in; height: auto;
+      }
+
+    }
+
+    @font-face {
+      font-family: THSarabunNew; 
+      src: url("{{ static_dir }}\fonts\thsarabunnew-webfont.ttf"); 
+    } 
+
+    html {
+      font-family: THSarabunNew;
+    }
+
+  </style>
+
+</head>
+
+<body>
+  <div id="head_table">
+    <table class="time-table" >
+
+      <thead class="time-head">
+
+        <th rowspan=2 width=4.5%>Date</th>
+        <th rowspan=2 width=5%>Customer</th>
+        <th rowspan=2 width=5%>Shipper</th>
+        <th rowspan=2 width=5%>Agent</th>
+        <th rowspan=2 width=3.5%>Size</th>
+        <th rowspan=2 width=7%>Booking</th>
+
+        <th rowspan=2 width=2.5%>TR</th>
+        <th rowspan=2 width=5%>From</th>
+        <th rowspan=2 width=2.5%>TR</th>
+        <th rowspan=2 width=5%>Factory</th>
+        <th rowspan=2 width=2.5%>TR</th>
+        <th rowspan=2 width=2.5%>TR</th>
+        <th rowspan=2 width=5%>To</th>
+
+        <th rowspan=2 width=7%>Container no</th>
+        <th rowspan=2 width=6%>Seal no</th>
+
+        <th rowspan="2" width=5.5%>เลขที่ใบงาน</th>
+
+        <th colspan="2">ลานรับตู้</th>
+        <th colspan="4">Factory</th>
+        <th colspan="2">ลานส่งตู้</th>
+        <tr>
+            <th width=4.5%>In</th>
+            <th width=4.5%>Out</th>
+
+            <th width=4.5%>In</th>
+            <th width=4.5%>Start</th>
+            <th width=4.5%>Finish</th>
+            <th width=4.5%>Out</th>
+
+            <th width=4.5%>In</th>
+            <th width=4.5%>Out</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+    <div id="content_table">
+      <table class="time-table" >
+
+        <tbody>
+            {% for booking in bookings %}
+
+            <tr>
+              <td width=4.5%>{{ booking.date | date:'d-m-y' }}</td>
+              <td width=5%>{{ booking.principal | truncatechars:8 }}</td>
+              <td width=5%>{{ booking.shipper | truncatechars:8 }}</td>
+              <td width=5%>{{ booking.agent | truncatechars:8 }}</td>
+              <td width=3.5%>{{ booking.size }}</td>
+              <td width=7% >{{ booking.booking_no }}</td>
+
+              <td width=2.5%>{{ booking.pickup_tr }}</td>
+              <td width=5%>{{ booking.pickup_from | truncatechars:8 }}</td>
+              <td width=2.5%>{{ booking.forward_tr }}</td>
+              <td width=5%>{{ booking.factory | truncatechars:8 }}</td>
+              <td width=2.5%>{{ booking.backward_tr }}</td>
+              <td width=2.5%>{{ booking.return_tr }}</td>
+              <td width=5%>{{ booking.return_to | truncatechars:8 }}</td>
+
+              <td width=7%>{{ booking.container_no }}</td>
+              <td width=6%>{{ booking.seal_no }}</td>
+
+              <td width=5.5%>{{ booking.work_id }}</td>
+
+              {% load parse_date %}
+              {% load split %}
+                    <td width=4.5%>
+                      {% with booking.pickup_in_time|split:"//" as pickup_in_time %}
+                        {% if pickup_in_time.0 %}
+                          {{ pickup_in_time.0|parse_date | date:'d-m-y' }}
+                        {% else %}
+                          {{ booking.pickup_date | date:'d-m-y'}}
+                        {% endif %}
+                        {{ pickup_in_time.1 }}
+                      {% endwith %}
+                    </td>
+                    <td width=4.5%>
+                      {% with booking.pickup_out_time|split:"//" as pickup_out_time %}
+                        {% if pickup_out_time.0 %}
+                          {{ pickup_out_time.0|parse_date | date:'d-m-y' }}
+                        {% else %}
+                          {{ booking.pickup_date | date:'d-m-y'}}
+                        {% endif %}
+                        {{ pickup_out_time.1 }}
+                      {% endwith %}
+                    </td>
+                    <td width=4.5%>
+                      {% with booking.factory_in_time|split:"//" as factory_in_time %}
+                        {% if factory_in_time.0 %}
+                          {{ factory_in_time.0|parse_date | date:'d-m-y' }}
+                        {% else %}
+                          {{ booking.factory_date | date:'d-m-y'}}
+                        {% endif %}
+                        {{ factory_in_time.1 }}
+                      {% endwith %}  
+                    </td>
+                    <td width=4.5%>
+                      {% with booking.factory_load_start_time|split:"//" as factory_load_start_time %}
+                        {% if factory_load_start_time.0 %}
+                          {{ factory_load_start_time.0|parse_date | date:'d-m-y' }}
+                        {% else %}
+                          {{ booking.factory_date | date:'d-m-y'}}
+                        {% endif %}
+                        {{ factory_load_start_time.1 }}
+                      {% endwith %}  
+                    </td>
+                    <td width=4.5%>
+                      {% with booking.factory_load_finish_time|split:"//" as factory_load_finish_time %}
+                        {% if factory_load_finish_time.0 %}
+                          {{ factory_load_finish_time.0|parse_date | date:'d-m-y' }}
+                        {% else %}
+                          {{ booking.factory_date | date:'d-m-y'}}
+                        {% endif %}
+                        {{ factory_load_finish_time.1 }}
+                      {% endwith %}  
+                    </td>
+                    <td width=4.5%>
+                      {% with booking.factory_out_finish|split:"//" as factory_out_finish %}
+                        {% if factory_out_finish.0 %}
+                          {{ factory_out_finish.0|parse_date | date:'d-m-y' }}
+                        {% else %}
+                          {{ booking.factory_date | date:'d-m-y'}}
+                        {% endif %}
+                        {{ factory_out_finish.1 }}
+                      {% endwith %}  
+                    </td>
+
+                    <td width=4.5%>
+                      {% with booking.return_in_time|split:"//" as return_in_time %}
+                        {% if return_in_time.0 %}
+                          {{ return_in_time.0|parse_date | date:'d-m-y' }}
+                        {% else %}
+                          {{ booking.return_date | date:'d-m-y'}}
+                        {% endif %}
+                        {{ return_in_time.1 }}
+                      {% endwith %} 
+                    </td>
+                    <td width=4.5%>
+                      {% with booking.return_out_time|split:"//" as return_out_time %}
+                        {% if return_out_time.0 %}
+                          {{ return_out_time.0|parse_date | date:'d-m-y' }}
+                        {% else %}
+                          {{ booking.return_date | date:'d-m-y'}}
+                        {% endif %}
+                        {{ return_out_time.1 }}
+                      {% endwith %} 
+                    </td>
+
+            
+            </tr>
+            
+            
+            {% if forloop.counter|divisibleby:15 == 1 and not forloop.last %}
+                    </tbody>
+                </table>
+
+                <pdf:nextpage>
+                    <table class="time-table">
+                        <tbody>
+
+            {% endif %}
+
+            {% endfor %}
+        </tbody>
+      </table>
+
+      </div>
+      
+
+
+
+</body>
+</html>

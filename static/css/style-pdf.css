@@ -1,0 +1,122 @@
+body {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+table.border-out {border:1px solid #000;}
+td {border:none;}
+tr {border:none;}
+
+/* Border */
+.mt-5 {
+    margin-top: 5px;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.pr-5 {
+    padding-right: 5px
+}
+
+.pl-5 {
+    padding-left: 5px
+}
+
+.pt-5 {
+    padding-top: 5px
+}
+
+.pt-10 {
+    padding-top: 10px
+}
+
+.pb-10 {
+    padding-bottom: 10px
+}
+
+td.border-r {
+    border-right: 1px solid black;
+}
+
+td.border-b {
+    border-bottom: 1px solid black;
+}
+
+.h-30 {
+    height: 30px;
+}
+
+/* Text format */
+.big {
+    height: 20px;
+    padding-top: 5px;
+}
+
+.small {
+    font-size: 10px;
+    font-weight: bold;
+    height: 14px;
+}
+
+.text-12 {
+    font-size: 12px;
+}
+
+.text-blue {
+    color: blue;
+}
+
+.text-red {
+    color: red;
+}
+
+.center {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.text-center{
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-footer {
+    font-size: 12px;
+    font-weight: bold;
+    padding-top: 5px
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+
+.time-table {
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .time-table th {
+    background-color: lightgray;
+    border:1px solid black;
+    padding:1px;
+    vertical-align: middle;
+    height: 0.25in;
+  }
+
+
+  .time-table td {
+    vertical-align: bottom;
+    padding:1px;
+    border:1px solid black;
+    height: 35px;
+
+  }
+
+

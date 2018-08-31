@@ -1,0 +1,89 @@
+<html>
+    <head>
+        <title>Login</title>
+
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.0/js/bootstrap.min.js"></script>
+
+        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+        <style>
+        .bg-img {
+            /* background-image: url('https://images.unsplash.com/photo-1473445730015-841f29a9490b?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=bec1372c6bc20f2bc9692bd09b13dfb9&auto=format&fit=crop&w=1350&q=80'); */
+            background-image: url('https://images.pexels.com/photos/406014/pexels-photo-406014.jpeg?cs=srgb&dl=adorable-animal-blur-406014.jpg&fm=jpg');
+            background-position: center;
+            background-size: cover;
+        }
+        </style>
+
+    </head>
+
+    <body class="bg-light bg-img">
+            <div class="container h-100 position-relative">
+                    <!-- <div class="row">
+                        <div class="col-md-12"> -->
+                            <!-- <div class="row"> -->
+                                <div class="col-md-5 position-absolute" style="top: 30%; left:50%; transform: translate(-50%,-30%);">
+                
+                                    <!-- form card login -->
+                                    <div class="card shadow rounded-3" style="opacity:0.8;">
+                                        <div class="card-header">
+                                            <h2 class="m-2 text-center">Login</h2>
+                                        </div>
+                                        <!-- <hr> -->
+                                        <div class="card-body">
+                                        <!-- <div class="p-2"> -->
+                                            {% for message in messages %}
+                                                <div class="text-danger"><i class="fa fa-times"></i>&nbsp;{{ message }}</div>
+                                            {% endfor %}
+                                            <form method="POST" action="{% url 'login' %}">
+                                                {% csrf_token %}
+                                                <div class="input-group input-group-lg mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"><i class="fa fa-user"></i></span>
+                                                    </div>
+                                                    <input type="text" class="form-control" name="username" placeholder="Username" required>
+                                                </div>
+
+                                                <div class="input-group input-group-lg mb-3">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                                                    </div>
+                                                    <input type="password" class="form-control" name="password" autocomplete="off" placeholder="Password" required>
+                                                </div>
+
+                                                <div class="custom-control custom-checkbox mb-1">
+                                                    <input type="hidden" name="remember_me" value=0 />
+                                                    <input type="checkbox" class="custom-control-input" id="remember_me" name="remember_me" value=1>
+                                                    <label class="custom-control-label" for="remember_me">&nbsp;Remember me</label>
+                                                </div>
+
+                                                <button type="submit" class="btn btn-primary btn-lg float-right" id="btnLogin"><i class="fa fa-sign-in"></i>&nbsp;Login</button>
+                                            </form>
+                                        </div>
+                                        <!--/card-block-->
+                                    </div>
+                                    <!-- /form card login -->
+                
+                                </div>
+                
+                
+                            <!-- </div> -->
+                            <!--/row-->
+                
+                        <!-- </div> -->
+                        <!--/col-->
+                    <!-- </div> -->
+                    <!--/row-->
+                </div>
+                <!--/container-->
+    </body>
+</html>
+
+    
+   

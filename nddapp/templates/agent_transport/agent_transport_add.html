@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% load staticfiles %}
+
+
+{% block title %} Add Booking {% endblock %}
+        
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/style_add_booking.css' %}" />
+    <script src="{% static 'js/add-form.js' %}"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script>
+        window.setTimeout(function() {
+            $(".alert").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove(); 
+            });
+        }, 2000);
+        
+        $(function() {
+            $(document).on('click', '.add-more', function(e) {
+                e.preventDefault();
+
+                var controlForm = $('.control:first'),
+                currentEntry = $(this).parents('.entry:first'),
+                newEntry = $(currentEntry.clone()).appendTo(controlForm);
+
+                newEntry.find('input').val('');
+                controlForm.find('.entry:not(:last) .add-more')
+                .removeClass('add-more').addClass('remove')
+                .removeClass('btn-success').addClass('btn-danger')
+                .html('<span><i class="fa fa-minus"></i></span>');
+            }).on('click', '.remove', function(e) {
+                $(this).parents('.entry:first').remove();
+
+                e.preventDefault();
+                return false;
+            });
+        });
+
+    </script>
+{% endblock %}
+
+{% block content %}
+    {% for message in messages %}
+        <div class="alert alert-danger">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            {{ message }}
+        </div>
+    {% endfor %}
+    <div class="container col-sm-6 shadow bg-white">
+        <div class="container col-sm-9">
+            <div class="container text-center pt-4 pb-2">
+            <h2>Add Agent Transport</h2>
+            <hr>
+            </div>
+            <form method="POST" class="add-form">
+                {% csrf_token %}
+                        <!-- <form id="customer" method="POST"> -->
+                            <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">CUSTOMER</span>
+                                    </div>
+                                    <select id="id_principal" name="principal" class="custom-select" onchange="this.form.submit();" required>
+                                        <option value=""> -------- </option>
+                                        {% for p in principals %}
+                                            {% ifequal p.pk|stringformat:"s" principal %}
+                                                <option value="{{ p.pk }}" selected> {{ p.name }} </option>
+                                            {% else %}
+                                                <option value="{{ p.pk }}"> {{ p.name }} </option>
+                                            {% endifequal %}
+                                        {% endfor %}
+                                    </select>
+                            </div>
+                            <div class="input-group mb-3">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">SHIPPER</span>
+                                    </div>
+                                <select id="id_shipper" name="shipper" class="custom-select" required>
+                                    <option value=""> -------- </option>
+                                    {% for s in shippers %}
+                                        <option value="{{ s.pk }}"> {{ s.name }} </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        <!-- </form> -->
+                        <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">AGENT</span>
+                                </div>
+                            {{ form.agent }} 
+                        </div>
+                    
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">BOOKING NO.</span>
+                            </div>
+                            {{ form.booking_no }}
+                            {{ form.work_type }}
+                            {{ form.booking_color }}
+                        </div>
+                        
+                        <fieldset>
+                                <legend>CONTAINER</legend>
+                        {% if size or quantity or date %}
+                            <div class="control">
+                                    {% for s, q, d in zip %}
+                                    <div class="entry input-group control-group after-add-more mb-2">
+                                        <input name="size" class="form-control" id="id_size" placeholder="SIZE" value="{{ s }}" required>
+                                        <input type="number" name="quantity" min="1" class="form-control" id="id_quantity" placeholder="QUANTITY" value="{{ q }}" required>
+                                        <input type="date" name="date" class="form-control" id="id_date" placeholder="DATE" value="{{ d }}" required>
+                                        <div class="input-group-append">
+                                    {% if forloop.last %}
+                                        <button class="btn btn-success add-more" type="button"><span><i class="fa fa-plus"></i></span></button>     
+                                    {% else %}
+                                        <button class="btn btn-danger remove" type="button"><span><i class="fa fa-minus"></i></span></button>
+                                    {% endif %}
+                                        </div>
+                                    </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                            <div class="control">
+                                <div class="entry input-group control-group after-add-more mb-2">
+                                        <input name="size" class="form-control" id="id_size" placeholder="SIZE" required>
+                                        <input type="number" name="quantity" min="1" class="form-control" id="id_quantity" placeholder="QUANTITY" required>
+                                        <input type="date" name="date" class="form-control" id="id_date" placeholder="DATE" required>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-success add-more" type="button"><span><i class="fa fa-plus"></i></span></button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    </fieldset>
+                            
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">FROM</span>
+                        </div>
+                        {{ form.pickup_from }}
+                        <!-- <div class="input-group-append">
+                            <span class="input-group-text">FACTORY</span>
+                        </div>
+                        {{ form.factory }} -->
+                        <div class="input-group-append">
+                            <span class="input-group-text">TO</span>
+                        </div>
+                        {{ form.return_to }}
+                    </div>
+
+                    <!-- <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">VESSEL</span>
+                        </div>
+                        {{ form.vessel }} 
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">PORT</span>
+                        </div>
+                        {{ form.port }} 
+                    </div> -->
+
+                    <!-- <fieldset>
+                        <legend>ตัดหาง</legend>
+                        
+                        <div class="container input-group mb-2 col-sm-8">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="hidden" name="cut" value=0 />
+                                        <input type="checkbox" class="custom-control-input" id="cut" name="cut" value=1 onchange="updateCut();">
+                                        <label class="custom-control-label" for="cut"></label>
+                                    </div>
+                                </div>
+                                <span class="input-group-text">RETURN DATE</span>
+                            </div>
+                                <input type="date" name="return_date" class="form-control" id="id_return_date" disabled>
+                                    {{ form.return_date }}
+                            </div>
+                    </fieldset> -->
+
+                    <!-- <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">CLOSING</span>
+                        </div>
+                        {{ form.closing_date }}
+                        {{ form.closing_time }} 
+                    </div> -->
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">REF.</span>
+                        </div>
+                        {{ form.ref }} 
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">REMARK</span>
+                        </div>
+                        {{ form.remark }} 
+                    </div>
+
+
+                    <fieldset>
+                            <legend>ADDRESS</legend>
+                    <div class="custom-control custom-radio mb-3">
+                        <input type="radio" class="custom-control-input" id="id_address_1" name="address" onchange="updateradio('');" value="shipper" checked>
+                        <label class="custom-control-label" for="id_address_1">Shipper</label>
+                    </div>
+
+                    <div class="custom-control custom-radio mb-3">
+                        <input type="radio" class="custom-control-input" id="id_address_2" name="address" onchange="updateradio('');" value="other">
+                        <label class="custom-control-label" for="id_address_2">Other</label><br />
+                        <textarea class="form-control" rows="3" id="id_address_other" name="address_other" disabled></textarea>
+                    </div>
+
+                    <div class="custom-control custom-radio">
+                        <input type="radio" class="custom-control-input" id="id_address_3" name="address" onchange="updateradio('');" value="none">
+                        <label class="custom-control-label" for="id_address_3">None</label>
+                    </div>
+                    </fieldset>
+                    <div class="text-right pb-4">
+                    <button class="btn btn-light btn-lg mr-sm-1" onclick="window.location='{% url 'agent-transport-table' %}'">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-lg" formaction="{% url 'agent-transport-save' %}">SUBMIT</button>
+                </div>
+            </form>
+            
+        </div>
+        
+        </div>
+        {% endblock %}
+    
+   

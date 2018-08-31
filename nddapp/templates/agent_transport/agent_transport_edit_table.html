@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block title %} Edit Booking {% endblock %}
+        
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/style-table.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style-edit-table.css' %}" />
+    <script src="{% static 'js/fixed-header.js' %}"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script>
+        window.setTimeout(function() {
+            $(".save-msg").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove(); 
+            });
+        }, 1500);
+
+        $(function() {
+            $("#table-cont").css({top: $("#filter-date").offset().top + 60 });
+
+            $('select[name="filter_by"]').change(function() {
+                if($(this).val() == "month"){
+                    $('input#id_date').attr("type", "month")
+                }
+                else {
+                    $('input#id_date').attr("type", "date")
+                }
+                
+            });
+        });
+    </script>
+{% endblock %}
+        
+{% block content %}
+<br>
+    <div id="filter-date" class="container col-12">
+            <div class="row">
+        
+                <div class="col">
+                    <form name="agent-transport-filter-sort" method="GET" action="{% url 'agent-transport-edit' %}" class="form-inline">
+                        {% csrf_token %}
+                        <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <select name="filter_by" class="btn" style="background-color: #CED4DA;">
+                                        <option value="date" class="bg-white">Date</option>
+                                        <option value="month" class="bg-white" {% if filter_by == 'month' %}selected{% endif %}>Month</option>
+                                    </select>
+        
+                                </div>
+        
+                            {% if filter_by == 'month' %}
+                                <input id="id_date" name="date" type="month" class="form-control mr-2" value="{{ date }}">
+                            {% else %}
+                                <input id="id_date" name="date" type="date" class="form-control mr-2" value="{{ date }}">
+                            {% endif %}
+        
+                        </div>
+        
+                        <button type="submit" class="btn btn-primary">OK</button>
+                    </form>
+                </div>
+        
+                <div class="col text-right">
+                        {% for message in messages %}
+                            <div class="save-msg mr-2 pt-2 text-secondary d-inline"><i class="fa fa-spinner fa-pulse"></i>&nbsp;{{ message }}</div>
+                        {% endfor %}
+        
+                        <button class="btn btn-primary" onclick="document.forms['table-filter'].submit();"><i class="fa fa-check"></i>&nbsp;Done</button>
+                        <form id="table-filter" method="GET" action="{% url 'agent-transport-table' %}" style="display:none;">
+                            <input type="hidden" name="date" value="{{ date }}">
+                            <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                        </form>
+                        
+        
+                </div>
+                </div>
+        
+    </div>
+        {% if agent_transports %}
+        <!-- <div class='table-cont' id='table-cont'> -->
+    <!-- <div class="container"> -->
+        <!-- <div class="row"> -->
+            <div id='table-cont' class="table-cont table-responsive"> 
+        <table>
+            <thead class="text-nowrap bg-lightgray">
+            <th>DATE</th>
+            <th>PRINCIPAL</th>
+            <th>SHIPPER</th>
+            <th>AGENT</th>
+            <th>SIZE</th>
+            <th class="px-4">BOOKING</th>
+
+            <th>TR</th>
+            <th>FM</th>
+            <th>TR</th>
+            <th>TO</th>
+
+            <th class="px-3">CONTAINER 1</th>
+            <th class="px-3">CONTAINER 2</th>
+
+            <th class="px-5">REF.</th>
+            <th class="px-5">REMARK</th>
+            <th>เลขที่ใบงาน</th>
+
+            <th>PICK UP</th>
+            <th>RETURN</th>
+
+        </thead> 
+        <tbody> 
+            {% for agent_transport in agent_transports %}
+                <form name="edit-form{{ agent_transport.pk }}" method="POST" action="{% url 'agent-transport-edit-save' %}">
+                    {% csrf_token %}
+                <input type="hidden" name="pk" value="{{ agent_transport.pk }}">
+                <input type="hidden" name="date_filter" value="{{ date }}">
+                <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                {% if agent_transport.cancel == '1' %}
+                    <tr class="bg-secondary collapsed" data-toggle="collapse" data-target="#accordion{{ agent_transport.pk }}">
+                {% elif not agent_transport.return_tr %}
+                    <tr class="alert-warning collapsed" data-toggle="collapse" data-target="#accordion{{ agent_transport.pk }}">
+                {% else %}
+                    <tr class="collapsed" data-toggle="collapse" data-target="#accordion{{ agent_transport.pk }}">
+                {% endif %}
+                                        
+                    <td><input type="date" name="date" class="form-control" value="{{ agent_transport.date | date:'Y-m-d' }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td class="no-collapsable text-left px-2"><div  class="long-text">{{ agent_transport.principal }}</div></td>
+                    <td class="no-collapsable text-left px-2"><div  class="long-text">{{ agent_transport.shipper }}</div></td>
+                    <td class="no-collapsable text-left px-2"><div  class="long-text">{{ agent_transport.agent }}</div></td>
+                    <td class="text-nowrap">{{ agent_transport.size }}</td>
+                    {% if agent_transport.cancel == '1' %}
+                        <td class="bg-secondary text-nowrap">
+                    {% else %}
+                        <td style="background-color: {{ agent_transport.booking_color }}" class="text-nowrap">
+                    {% endif %}
+                            {{ agent_transport.booking_no }}
+                        </td>
+
+                    <td><input name="pickup_tr" class="form-control" value="{{ agent_transport.pickup_tr }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="pickup_from" class="form-control" value="{{ agent_transport.pickup_from }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="return_tr" class="form-control" value="{{ agent_transport.return_tr }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="return_to" class="form-control" value="{{ agent_transport.return_to }}" onchange="this.form.submit();" autocomplete=off></td>
+
+                    <td><input name="container_1" class="form-control" value="{{ agent_transport.container_1 }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="container_2" class="form-control" value="{{ agent_transport.container_2 }}" onchange="this.form.submit();" autocomplete=off></td>
+
+                    <td><input name="ref" class="form-control" value="{{ agent_transport.ref }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><textarea class="form-control" rows="1" name="remark" style="padding: 2px 4px; font-size: 12px;" onchange="this.form.submit();">{{ agent_transport.remark }}</textarea></td>
+
+                    <td class="text-nowrap">{{ agent_transport.work_id }}</td>
+
+                    <td><input type="date" name="pickup_date" class="form-control" value="{{ agent_transport.pickup_date | date:'Y-m-d' }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input type="date" name="return_date" class="form-control" value="{{ agent_transport.return_date | date:'Y-m-d' }}" onchange="this.form.submit();" autocomplete=off></td>
+                </tr>
+            </form>
+            {% endfor %}
+            
+        </tbody> 
+        </table>
+        </div>
+        {% else %}
+            <h1 class="text-center text-secondary mt-3"> ไม่พบข้อมูล </h1>
+        {% endif %}
+
+        
+    {% endblock %}
+    </body>
+
+</html>

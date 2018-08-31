@@ -1,0 +1,28 @@
+@import url(../fonts/thsarabunnew.css);
+
+body{ 
+    font-family: THSarabunNew, sans-serif;
+
+    /* font-size: 14px; */
+    /* font-weight: bold; */
+    /* width: 100%; */
+} 
+
+#id_booking_color {
+    max-width: 15%;
+    height: 38px;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+}
+
+.add-address-other {
+    resize:vertical;
+}
+
+.w-15 {
+    max-width: 15%;
+}

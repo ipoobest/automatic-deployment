@@ -1,0 +1,298 @@
+{% load staticfiles %}
+
+
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <title>Order Template</title>
+  
+  <link rel="stylesheet" href="{{ static_dir }}\css\style-pdf.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style type='text/css'>
+    /* Size and frame */
+    @page {
+      size: a4 portrait;
+      /* size: 8.5in 11in; */
+      margin: 10pt;
+      @frame content_frame {           /* Static Frame */
+        -pdf-frame-content: content_table;
+        left: 0.5in; width: 7.3in; top: 0.5in; height: auto;
+      }
+    }
+
+    @font-face {
+      font-family: THSarabunNew; 
+      src: url("{{ static_dir }}\fonts\thsarabunnew-webfont.ttf"); 
+    } 
+
+    html {
+      font-family: THSarabunNew;
+    }
+
+  </style>
+
+</head>
+
+<body>
+    {% block content %}
+    {% if agent_transport %}
+
+    <div id="content_table">
+      <table class="border-out">
+        <tr>
+          <td colspan=8>
+            <img src="{{ static_dir }}\images\head.jpg" style="width:100%; height:auto;">
+
+          </td>
+        </tr>
+        <tr>
+            <td colspan=8></td>
+        </tr>
+        <tr class="big">
+          <td class="pl-5">วันที่</td>
+          <td colspan=2 class="center text-blue">{{ agent_transport.date | date:'d - m - Y' }}</td>
+          <td></td>
+          <td class="text-right">พนักงานขับรถชื่อ</td>
+          <td colspan=3 class="pr-5"></td>
+        </tr>
+        <tr class="small">
+          <td class="pl-5">DATE</td>
+          <td colspan=2 class="center">.............................................................</td>
+          <td></td>
+          <td>TRUCKER</td>
+          <td colspan=3 class="pr-5 center text-right">.......................................................................</td>
+        </tr>
+
+        <tr class="big">
+            <td colspan=2 class="pl-5">ทะเบียน / เบอร์รถ</td>
+            <td colspan=2 class="center">/</td>
+            <td colspan=2 class="pl-5">ทะเบียน / เบอร์หาง</td>
+            <td colspan=2 class="center pr-5">/</td>
+          </tr>
+          <tr class="small">
+            <td colspan=2 class="pl-5">TRUCK NO.</td>
+            <td colspan=2 class="pr-5 center text-right">.............................................................</td>
+            <td colspan=2 class="pl-5">CHASSIS NO.</td>
+            <td colspan=2 class="pr-5 center text-right">.............................................................</td>
+          </tr>
+
+          <tr>
+              <td colspan=8></td>
+          </tr>
+          <tr class="big h-30">
+            <td colspan=8 class="center">งานเที่ยวไป / FORWARD TRIP</td>
+          </tr>
+
+          <tr class="big">
+            <td colspan=2 class="pl-5">บุ๊คกิ้ง / Booking</td>
+            <td colspan=2 class="center text-blue">{{ agent_transport.booking_no }}</td>
+            <td colspan=2 class="pl-5">เอเย่นต์ / Agent</td>
+            <td colspan=2 class="center pr-5 text-blue">{{ agent_transport.agent }}</td>
+          </tr>
+          <tr class="small">
+            <td colspan=2 class="pl-5"></td>
+            <td colspan=2 class="pr-5 center text-right">.............................................................</td>
+            <td colspan=2 class="pl-5"></td>
+            <td colspan=2 class="pr-5 center text-right">.............................................................</td>
+          </tr>
+
+          <tr class="big">
+            <td colspan=2 class="pl-5">ลักษณะงาน / JOB TYPE</td>
+            <td colspan=3 class="center text-blue"></td>
+            <td colspan=1 class="pl-5">เลขที่ใบงาน</td>
+            <td colspan=2 class="center pr-5 text-blue">{{ agent_transport.work_id }}</td>
+          </tr>
+          <tr class="small">
+            <td colspan=2 class="pl-5"></td>
+            <td colspan=3 class="pr-5 center">.......................................................................</td>
+            <td colspan=1 class="pl-5"></td>
+            <td colspan=2 class="pr-5 center text-right">...................................................</td>
+          </tr>
+
+          <tr class="big">
+            <td class="pl-5">ขนาดตู้</td>
+            <td class="center text-blue">{{ agent_transport.size }}</td>
+            <td colspan=6></td>
+          </tr>
+          <tr class="small">
+            <td class="pl-5">SIZE</td>
+            <td class="pr-5 center">.............................</td>
+            <td colspan=6></td>
+          </tr>
+
+          <tr class="big">
+            <td class="pl-5">หมายเลขตู้ 1</td>
+            <td colspan=3 class="center pr-5 text-blue">{{ agent_transport.container_1 }}</td>
+            <td class="pl-5">หมายเลขตู้ 2</td>
+            <td colspan=3 class="center pr-5 text-blue">{{ agent_transport.container_2 }}</td>
+          </tr>
+          <tr class="small">
+            <td class="pl-5">CONTR NO.</td>
+            <td colspan=3 class="pr-5 center">.......................................................................</td>
+            <td class="pl-5">CONTR NO.</td>
+            <td colspan=3 class="pr-5 center text-right">.......................................................................</td>
+          </tr>
+
+          <tr class="big">
+            <td colspan=2 class="pl-5">ผู้ว่าจ้าง / Principal</td>
+            <td colspan=2 class="center text-blue">{{ agent_transport.principal }}</td>
+            <td class="center">จาก</td>
+            <td class="center text-blue">{{ agent_transport.pickup_from }}</td>
+            <td class="center">ถึง</td>
+            <td class="text-blue">{{ agent_transport.return_to }}</td>
+          </tr>
+          <tr class="small">
+            <td colspan=2></td>
+            <td colspan=2 class="pr-5 center text-right">.............................................................</td>
+            <td></td>
+            <td class="pr-5 center">................................</td>
+            <td></td>
+            <td class="pr-5 center text-right">................................</td>
+          </tr>
+
+          <tr class="h-30">
+              <td colspan=8></td>
+          </tr>
+          <tr class="big h-30">
+            <td colspan=8 class="center">งานเที่ยวกลับ / BACKWARD TRIP</td>
+          </tr>
+
+          <tr class="big">
+            <td colspan=2 class="pl-5">บุ๊คกิ้ง / Booking</td>
+            <td colspan=2 class="center text-blue"></td>
+            <td colspan=2 class="pl-5">เอเย่นต์ / Agent</td>
+            <td colspan=2 class="center pr-5 text-blue"></td>
+          </tr>
+          <tr class="small">
+            <td colspan=2 class="pl-5"></td>
+            <td colspan=2 class="pr-5 center text-right">.............................................................</td>
+            <td colspan=2 class="pl-5"></td>
+            <td colspan=2 class="pr-5 center text-right">.............................................................</td>
+          </tr>
+
+          <tr class="big">
+            <td colspan=2 class="pl-5">ลักษณะงาน / JOB TYPE</td>
+            <td colspan=3 class="center text-blue"></td>
+            <td colspan=1 class="pl-5">เลขที่ใบงาน</td>
+            <td colspan=2 class="center pr-5 text-blue"></td>
+          </tr>
+          <tr class="small">
+            <td colspan=2 class="pl-5"></td>
+            <td colspan=3 class="pr-5 center">.......................................................................</td>
+            <td colspan=1 class="pl-5"></td>
+            <td colspan=2 class="pr-5 center text-right">...................................................</td>
+          </tr>
+
+          <tr class="big">
+            <td class="pl-5">ขนาดตู้</td>
+            <td class="center text-blue"></td>
+            <td colspan=6></td>
+          </tr>
+          <tr class="small">
+            <td class="pl-5">SIZE</td>
+            <td class="pr-5 center">.............................</td>
+            <td colspan=6></td>
+          </tr>
+
+          <tr class="big">
+            <td class="pl-5">หมายเลขตู้ 1</td>
+            <td colspan=3 class="center pr-5 text-blue"></td>
+            <td class="pl-5">หมายเลขตู้ 2</td>
+            <td colspan=3 class="center pr-5 text-blue"></td>
+          </tr>
+          <tr class="small">
+            <td class="pl-5">CONTR NO.</td>
+            <td colspan=3 class="pr-5 center">.......................................................................</td>
+            <td class="pl-5">CONTR NO.</td>
+            <td colspan=3 class="pr-5 center text-right">.......................................................................</td>
+          </tr>
+
+          <tr class="big">
+            <td colspan=2 class="pl-5">ผู้ว่าจ้าง / Principal</td>
+            <td colspan=2 class="center text-blue"></td>
+            <td class="center">จาก</td>
+            <td class="center text-blue"></td>
+            <td class="center">ถึง</td>
+            <td class="text-blue"></td>
+          </tr>
+          <tr class="small">
+            <td colspan=2></td>
+            <td colspan=2 class="pr-5 center text-right">.............................................................</td>
+            <td></td>
+            <td class="pr-5 center">................................</td>
+            <td></td>
+            <td class="pr-5 center text-right">................................</td>
+          </tr>
+
+
+          <tr class="h-30">
+              <td colspan=8></td>
+          </tr>
+          <tr class="big">
+            <td class="pl-5">Ref.</td>
+            <td colspan=7 class="text-blue pr-5">{{ agent_transport.ref }}</td>
+          </tr>
+          <tr class="small">
+            <td class="pl-5"> </td>
+            <td colspan=7 class="center text-right pr-5">..................................................................................................................................................................................</td>
+          </tr>
+
+          <tr class="big">
+            <td class="pl-5">หมายเหตุ</td>
+            <td colspan=7 class="text-blue pr-5">{{ agent_transport.remark }}</td>
+          </tr>
+          <tr class="small">
+            <td class="pl-5">REMARK</td>
+            <td colspan=7 class="center text-right pr-5">..................................................................................................................................................................................</td>
+          </tr>
+          <tr>
+              <td colspan=8></td>
+          </tr>
+      </table>
+
+        <table>
+          <tr class="text-center text-footer">
+            <td colspan=4>ได้รับตู้คอนเทนเนอร์ในสภาพดีและสินค้าในสภาพเรียบร้อยแล้ว</td>
+            <td colspan=4>Verified to recive container in good condition and seal in tact</td>
+          </tr>
+          <tr>
+            <td colspan=8 style="height:40px;"></td>
+          </tr>
+          <tr class="text-center text-footer">
+            <td colspan=8>ลายเซ็นผู้ว่าจ้างหรือตัวแทน</td>
+          </tr>
+          <tr class="small text-center">
+            <td colspan=8>AGENT/SHIPPER/CONSIGNEE 'S SIGNATURE</td>
+          </tr>
+          <tr class="text-right text-footer">
+            <td colspan=3>วันที่</td>
+            <td colspan=5></td>
+          </tr>
+          <tr class="small">
+              <td colspan=3 class="text-right">DATE</td>
+              <td colspan=2 class="center">...................................................</td>
+              <td colspan=3></td>
+          </tr>
+        </table>
+        <div class="mt-20">
+          <table width=80%>
+            <tr>
+              <td width=20% style="vertical-align: top;">
+                ออกใบเสร็จ
+              </td>
+              <td class="text-blue">
+                {{ address | linebreaks }}
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      
+        
+        {% endif %}
+        {% endblock %}
+
+
+</body>
+</html>

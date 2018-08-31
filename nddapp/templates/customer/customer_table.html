@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block title %} Customer Data {% endblock %}
+
+{% block extra_head %}
+<!-- <link rel="stylesheet" href="{% static 'css/style-table.css' %}" /> -->
+    <!-- <script src="{% static 'js/fixed-header.js' %}"></script> -->
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<script>
+$(function() {
+
+        $("#customerList").css({top: $("#search-box").offset().top + 55 });
+
+        // $("#side").css({top: $("#nbar").offset().top });
+
+        // $("div#sidebarList").css({'min-height': $( window ).height()-$("#nbar").height()-20});
+
+        // $("#sidebarList").resize(function()  {
+        //     $("#customerList").css({height: $( window ).height()-$("#nbar").height()-20});
+        // });
+
+
+    });
+
+
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myList a").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+
+    $(function() {
+        $("button.shipper-delete").click(function(){
+            if (confirm('Are you sure?')){
+                $(this).next().submit();
+            }
+            return false;
+        });
+
+        $("button#buttonDeleteCustomer").click(function(){
+            if (confirm('Are you sure?')){
+                $(this).next().submit();
+            }
+            return false;
+        });
+    });
+</script>
+
+<style>
+
+    #sidebarList {
+        position: fixed;
+    }
+    #customerList {
+        overflow-y:auto;
+        /* width:100%; */
+        position: fixed;
+        bottom:0px;
+    }
+/* width */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}
+</style>
+
+    
+{% endblock %}
+
+
+{% block content %}
+
+<div class="col-10 border-left" style="position:fixed; right:0; height:100%; background: white;"></div>
+
+<!-- POPUP: Add customer -->
+<div class="modal fade" id="modalAddCustomer" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+    <form method="POST" action="{% url 'customer-add-new' %}">
+            {% csrf_token %}
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h4 class="modal-title w-100 font-weight-bold">Add New Customer</h4>
+                <button class="close" data-dismiss="modal" aria-label="Close" style="outline: none; ">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body mx-3">
+                <div class="input-group my-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">NAME</span>
+                    </div>
+                    <input name="customer_add" class="form-control" autocomplete=off required>
+                </div>
+
+                <div class="md-form mb-3 float-right text-secondary">
+                        <em>&mdash;&nbsp;WORK TYPE :</em>
+                    <div class="custom-control custom-radio ml-4 d-inline">
+                        <input type="radio" class="custom-control-input" id="workTypeAdd1" name="work_type_add" value="normal" checked>
+                        <label class="custom-control-label" for="workTypeAdd1">Normal</label>
+                    </div> 
+
+                    <div class="custom-control custom-radio ml-4 d-inline">
+                        <input type="radio" class="custom-control-input" id="workTypeAdd2" name="work_type_add" value="agent-transport">
+                        <label class="custom-control-label" for="workTypeAdd2">สายเรือ</label>
+                    </div> 
+                </div>
+
+            </div>
+            <div class="modal-footer d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Side bar: Search  -->
+<div class="col-12">
+    <div class="row">
+        <div class="col-2 container p-0">
+            <div id="sidebarList" class="col-2 container p-0">
+                <div class="m-3" id="search-box">
+                    <div class="input-group">
+                    <input class="form-control" id="myInput" type="text" placeholder="Search Customer">
+                    <div class="input-group-append">
+                            <button class="btn btn-success" data-toggle="modal" data-target="#modalAddCustomer"><i class="fa fa-plus"></i></button> 
+                        </div>    
+                    </div>
+                </div>
+                <div id="customerList" class="border-top col-2 p-0">
+                    <div id="myList" class="list-group">
+                        {% for principal in principals %}
+                        <a href="{% url 'customer-detail' pk=principal.pk %}" class="list-group-item list-group-item-action">
+                            <div class="row p-0">
+                                <div class="col-8 text-truncate">
+                                    {{ principal.name }}
+                                </div>
+                                <div class="col-4 float-right">
+                                {% if principal.work_type == "agent-transport" %}
+                                    <span class="badge badge-pill badge-secondary float-right">สายเรือ</span>
+                                {% endif %}
+                                </div>
+                            </div>
+                        </a>                      
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-10 container">
+            {% if customer %}
+
+            <div class="m-4 text-secondary">
+                <div class="row">
+                    <div class="col-8"> 
+                        <h1 class="mb-0 text-truncate">{{ customer.name }}</h1>
+               
+                        <p class="my-0 d-inline"><em>{{ customer.work_type }}</em></p>
+                    </div>
+                    <div class="col-4 text-right">
+                        <button class="btn btn-info mr-1" data-toggle="modal" data-target="#modalEditCustomer"><i class="fa fa-edit"></i> Edit</button>
+                        <!-- <button class="btn btn-danger" onclick="document.getElementById('formDeleteCustomer').submit();"><i class="fa fa-trash"></i> Delete</button> -->
+                        <button id="buttonDeleteCustomer" class="btn btn-danger"><i class="fa fa-trash"></i> Delete</button>
+                        <form id="formDeleteCustomer" method="POST" action="{% url 'customer-delete' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="customer_pk" value="{{ customer.pk }}">
+                        </form>
+                    </div>
+               </div>
+               <!-- <a href="#" class="badge badge-secondary badge-pill d-inline ml-3">Edit</a>
+               <a href="#" class="badge badge-secondary badge-pill d-inline ml-3">Delete</a> -->
+               <hr class="m-0">
+            </div>
+
+            <!-- POPUP: Edit customer -->
+            <div class="modal fade" id="modalEditCustomer" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <form method="POST" action="{% url 'customer-edit' %}">
+                            {% csrf_token %}
+                                <div class="modal-content">
+                                    <div class="modal-header text-center">
+                                        <h4 class="modal-title w-100 font-weight-bold">Edit Customer</h4>
+                                        <button class="close" data-dismiss="modal" aria-label="Close" style="outline: none; ">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body mx-3">
+                                        <input type="hidden" name="pk" value="{{ customer.pk }}">
+
+                                        <div class="input-group my-3">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text">NAME</span>
+                                            </div>
+                                            <input name="customer_edit" class="form-control" value="{{ customer.name }}" autocomplete=off required>
+                                        </div>
+                        
+                                        <div class="md-form mb-3 float-right text-secondary">
+                                                <em>&mdash;&nbsp;WORK TYPE :</em>
+                                            <div class="custom-control custom-radio ml-4 d-inline">
+                                                {% if customer.work_type == 'normal' %}
+                                                    <input type="radio" class="custom-control-input" id="workTypeEdit1" name="work_type_edit" value="normal" checked>
+                                                {% else %}
+                                                    <input type="radio" class="custom-control-input" id="workTypeEdit1" name="work_type_edit" value="normal">
+                                                {% endif %}
+                                                <label class="custom-control-label" for="workTypeEdit1">Normal</label>
+                                            </div> 
+                        
+                                            <div class="custom-control custom-radio ml-4 d-inline">
+                                                {% if customer.work_type == 'agent-transport' %}
+                                                    <input type="radio" class="custom-control-input" id="workTypeEdit2" name="work_type_edit" value="agent-transport" checked>
+                                                {% else %}
+                                                    <input type="radio" class="custom-control-input" id="workTypeEdit2" name="work_type_edit" value="agent-transport">
+                                                {% endif %}
+                                                <label class="custom-control-label" for="workTypeEdit2">สายเรือ</label>
+                                            </div> 
+                                        </div>
+                        
+                                    </div>
+                                    <div class="modal-footer d-flex justify-content-center">
+                                        <button type="submit" class="btn btn-primary">Save</button>
+                                    </div>
+                                </div>
+                            </form>
+                    </div>
+                </div>
+
+
+                <!-- POPUP : Add new shipper -->
+                <div class="modal fade" id="modalAddNewShipper" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <form method="POST" action="{% url 'shipper-add-new' %}">
+                                {% csrf_token %}
+                            <div class="modal-content">
+                                <div class="modal-header text-center">
+                                    <h4 class="modal-title w-100 font-weight-bold">Add New Shipper</h4>
+                                    <button class="close" data-dismiss="modal" aria-label="Close" style="outline: none; ">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body mx-3">
+                                    <input type="hidden" name="customer_pk" value="{{ customer.pk }}">
+
+                                    <div class="text-secondary">NAME :</div>
+                                    <input name="shipper_add" class="form-control" autocomplete=off required>
+
+                                    <div class="text-secondary mt-3">ADDRESS :</div>
+                                    <textarea name="address_add" rows=4 class="form-control" autocomplete=off></textarea>
+                                </div>
+                                <div class="modal-footer d-flex justify-content-center">
+                                    <button type="submit" class="btn btn-primary">Save</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+
+               
+               <div class="my-5 col-6 container">
+               <table class="table bg-white border-bottom">
+                   <!-- <thead style="background: lightgray;"> -->
+                        <thead class="bg-light">
+                        <tr class="row m-0">
+                            <th class="col-2"> SHIPPER </th>
+                            <th class="col-7"> ADDRESS </th>
+                            <th class="col-3 text-right"><button class="btn btn-outline-secondary" data-toggle="modal" data-target="#modalAddNewShipper"><i class="fa fa-plus"></i></button></th>
+                        </tr>
+                   </thead>
+                   <tbody>
+                    {% if shippers %}
+                    {% for shipper in shippers %}
+                    <tr class="row m-0">
+                        <td class="col-2 text-truncate" >{{ shipper.name }}</td>
+                        <td class="col-7 text-truncate">{{ shipper.address | linebreaks }}</td>
+                        <td class="text-right col-3 text-right">
+                            <button class="btn btn-outline-info" data-toggle="modal" data-target="#modalEditShipper{{ shipper.pk }}"><i class="fa fa-edit"></i></button>
+                            <!-- <button class="btn btn-outline-danger" onclick="document.getElementById('formDeleteShipper{{ shipper.pk }}').submit();"><i class="fa fa-trash"></i></button> -->
+                            <button class="btn btn-outline-danger shipper-delete"><i class="fa fa-trash"></i></button>
+                            <form id="formDeleteShipper{{ shipper.pk }}" method="POST" action="{% url 'shipper-delete' %}" class="shipper-delete">
+                                {% csrf_token %}
+                                <input type="hidden" name="customer_pk" value="{{ customer.pk }}">
+                                <input type="hidden" name="shipper_pk" value="{{ shipper.pk }}">
+                            </form>
+                        </td>
+
+                    </tr>
+
+                    <!-- POPUP : Edit shipper -->
+                    <div class="modal fade" id="modalEditShipper{{ shipper.pk }}" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <form method="POST" action="{% url 'shipper-edit' %}">
+                                    {% csrf_token %}
+                                    <div class="modal-content">
+                                        <div class="modal-header text-center">
+                                            <h4 class="modal-title w-100 font-weight-bold">Edit Shipper Detail</h4>
+                                            <button class="close" data-dismiss="modal" aria-label="Close" style="outline: none; ">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body mx-3">
+                                            <input type="hidden" name="customer_pk" value="{{ customer.pk }}">
+                                            <input type="hidden" name="shipper_pk" value="{{ shipper.pk }}">
+
+                                            <div class="text-secondary">NAME :</div>
+                                            <input name="shipper_edit" class="form-control" value="{{ shipper.name }}" autocomplete=off required>
+
+                                            <div class="text-secondary mt-3">ADDRESS :</div>
+                                            <textarea name="address_edit" rows=4 class="form-control"autocomplete=off>{{ shipper.address }}</textarea>
+                                        </div>
+                                        <div class="modal-footer d-flex justify-content-center">
+                                        <!-- <div class="modal-footer text-right"> -->
+                                            <button class="btn btn-primary">Save</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan=3 class="text-center text-secondary">
+                            <h5>ไม่พบข้อมูล</h5>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    </tbody>
+               </table>
+               </div>
+               
+            
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

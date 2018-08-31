@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block title %} Edit {% endblock %}
+        
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/style-table.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style-edit-table.css' %}" />
+    <script src="{% static 'js/fixed-header.js' %}"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script>
+        window.setTimeout(function() {
+            $(".save-msg").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove(); 
+            });
+        }, 1500);
+
+        $(function() {
+            $("#table-cont").css({top: $("#filter-date").offset().top + 60 })
+
+            $('select[name="filter_by"]').change(function() {
+                if($(this).val() == "month"){
+                    $('input#id_date').attr("type", "month")
+                }
+                else {
+                    $('input#id_date').attr("type", "date")
+                }
+                
+            });
+        });
+    </script>
+{% endblock %}
+        
+{% block content %}
+<br>
+    <!-- {% for message in messages %}
+        <div class="fixed-top alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %} -->
+    <div id="filter-date" class="container col-12">
+            <div class="row">
+        
+
+        <div class="col">
+            <form name="booking-filter-sort" method="GET" action="{% url 'booking-edit' %}" class="form-inline">
+                {% csrf_token %}
+                <div class="input-group">
+                        <div class="input-group-prepend">
+                            <select name="filter_by" class="btn" style="background-color: #CED4DA;">
+                                <option value="date" class="bg-white">Date</option>
+                                <option value="month" class="bg-white" {% if filter_by == 'month' %}selected{% endif %}>Month</option>
+                            </select>
+
+                        </div>
+
+                    {% if filter_by == 'month' %}
+                        <input id="id_date" name="date" type="month" class="form-control mr-2" value="{{ date }}">
+                    {% else %}
+                        <input id="id_date" name="date" type="date" class="form-control mr-2" value="{{ date }}">
+                    {% endif %}
+
+                </div>
+
+                <button type="submit" class="btn btn-primary">OK</button>
+            </form>
+        </div>
+
+        <div class="col text-right">
+                {% for message in messages %}
+                    <div class="save-msg mr-2 pt-2 text-secondary d-inline"><i class="fa fa-spinner fa-pulse"></i>&nbsp;{{ message }}</div>
+                {% endfor %}
+
+                <button class="btn btn-primary" onclick="document.forms['table-filter'].submit();"><i class="fa fa-check"></i>&nbsp;Done</button>
+                <form id="table-filter" method="GET" action="{% url 'booking-table' %}" style="display:none;">
+                    <input type="hidden" name="date" value="{{ date }}">
+                    <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                </form>
+                
+
+        </div>
+        </div>
+    </div>
+        {% if bookings %}
+        <!-- <div class='table-cont' id='table-cont'> -->
+    <!-- <div class="container"> -->
+        <!-- <div class="row"> -->
+            <div id='table-cont' class="table-cont table-responsive"> 
+        <table>
+            <thead class="text-nowrap bg-lightgray">
+            <th>TIME</th>
+            <th>DATE</th>
+            <th>PRINCIPAL</th>
+            <th>SHIPPER</th>
+            <th>AGENT</th>
+            <th>SIZE</th>
+            <th class="px-2">BOOKING</th>
+
+            <th>TR</th>
+            <th>FM</th>
+            <th>TR</th>
+            <th>FACTORY</th>
+            <th>TR</th>
+            <th>TR</th>
+            <th>TO</th>
+
+            <th class="px-2">CONTAINER NO</th>
+            <th class="px-4">SEAL NO</th>
+            <!-- <th rowspan="2">VESSEL</th>
+            <th rowspan="2">PORT</th> -->
+            <th colspan=2>CLOSING (DATE / TIME)</th>
+
+            <th class="px-5">REF.</th>
+            <th class="px-5">REMARK</th>
+            <th>เลขที่ใบงาน</th>
+
+            <!-- <th rowspan="2">PICK UP</th>
+            <th rowspan="2">FACTORY</th> -->
+            <th>RETURN</th>
+
+            <!-- <th colspan="2">ลานรับตู้</th>
+            <th colspan="4">Factory</th>
+            <th colspan="2">ลานส่งตู้</th>
+            <tr>
+                <th>In</th>
+                <th>Out</th>
+
+                <th>In</th>
+                <th>Start</th>
+                <th>Finish</th>
+                <th>Out</th>
+
+                <th>In</th>
+                <th>Out</th>
+            </tr> -->
+        </thead> 
+        <tbody> 
+            <!-- <form name="edit-form" method="POST" action="{% url 'booking-edit-save' %}">
+                {% csrf_token %} -->
+            {% for booking in bookings %}
+            <form name="edit-form{{ booking.pk }}" method="POST" action="{% url 'booking-edit-save' %}">
+                {% csrf_token %}
+            <input type="hidden" name="pk" value="{{ booking.pk }}">
+            <input type="hidden" name="date_filter" value="{{ date }}">
+            <input type="hidden" name="filter_by" value="{{ filter_by }}">
+            {% if booking.cancel == '1' %}
+                <tr class="bg-secondary">
+            {% elif booking.closing_date < today.date and not booking.return_tr %}
+                <tr class="bg-danger">
+            {% elif booking.closing_date <= tmr.date and not booking.return_tr %}
+                <tr class="alert-danger">
+            {% elif booking.date <= today.date and not booking.return_tr %}
+                <tr class="alert-warning">
+            {% else %}
+                <tr>
+            {% endif %}
+                    
+                    <td><input name="time" class="form-control" value="{{ booking.time }}" onchange="this.form.submit();" autocomplete=off></td>
+                    
+                    <td><input type="date" name="date" class="form-control" value="{{ booking.date | date:'Y-m-d' }}" onchange="this.form.submit();" autocomplete=off required></td>
+                    <td class="no-collapsable text-left px-2"><div  class="long-text">{{ booking.principal }}</div></td>
+                    <td class="no-collapsable text-left px-2"><div  class="long-text">{{ booking.shipper }}</div></td>
+                    <td class="no-collapsable text-left px-2"><div  class="long-text">{{ booking.agent }}</div></td>
+                    <td class="text-nowrap">{{ booking.size }}</td>
+                    {% if booking.cancel == '1' %}
+                        <td class="bg-secondary text-nowrap">
+                    {% else %}
+                        <td style="background-color: {{ booking.booking_color }}" class="text-nowrap">
+                    {% endif %}
+                            {{ booking.booking_no }}
+                        </td>
+
+                    <td><input name="pickup_tr" class="form-control" value="{{ booking.pickup_tr }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="pickup_from" class="form-control" value="{{ booking.pickup_from }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="forward_tr" class="form-control" value="{{ booking.forward_tr }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="factory" class="form-control" value="{{ booking.factory }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="backward_tr" class="form-control" value="{{ booking.backward_tr }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="return_tr" class="form-control" value="{{ booking.return_tr }}" onchange="this.form.submit();" autocomplete=off></td>
+                    
+                    <td><input name="return_to" class="form-control" value="{{ booking.return_to }}" onchange="this.form.submit();" autocomplete=off></td>
+
+                    <td><input name="container_no" class="form-control" value="{{ booking.container_no }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input name="seal_no" class="form-control" value="{{ booking.seal_no }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <!-- <td class="text-nowrap">{{ booking.vessel }}</td>
+                    <td class="text-nowrap">{{ booking.port }}</td> -->
+                    <td><input type="date" name="closing_date" class="form-control" value="{{ booking.closing_date | date:'Y-m-d' }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><input type="time" name="closing_time" class="form-control" value="{{ booking.closing_time }}" onchange="this.form.submit();" autocomplete=off></td>
+
+                    <td><input name="ref" class="form-control" value="{{ booking.ref }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><textarea class="form-control" rows="1" name="remark" style="padding: 2px 4px; font-size: 11px;" onchange="this.form.submit();">{{ booking.remark }}</textarea></td>
+
+                    <td class="text-nowrap">{{ booking.work_id }}</td>
+
+                    <!-- <td class="text-nowrap">{{ booking.pickup_date }}</td>
+
+                    {% if booking.factory_date != booking.return_date %}
+                    <td class="text-nowrap bg-info">
+                    {% else %}
+                    <td class="text-nowrap">
+                    {% endif %}
+                        {{ booking.factory_date }}
+                    </td> -->
+                    
+                    {% if booking.factory_date != booking.return_date %}
+                    <td class="bg-info">
+                    {% else %}
+                    <td>
+                    {% endif %}
+                        <input type="date" name="return_date" class="form-control" value="{{ booking.return_date | date:'Y-m-d' }}" onchange="this.form.submit();" autocomplete=off>
+                    </td>
+
+                    <!-- <td class="text-nowrap">{{ booking.pickup_in_time }}</td>
+                    <td class="text-nowrap">{{ booking.pickup_out_time }}</td>
+                    <td class="text-nowrap">{{ booking.factory_in_time }}</td>
+                    <td class="text-nowrap">{{ booking.factory_load_start_time }}</td>
+                    <td class="text-nowrap">{{ booking.factory_load_finish_time }}</td>
+                    <td class="text-nowrap">{{ booking.factory_out_finish }}</td>
+                    <td class="text-nowrap">{{ booking.return_in_time }}</td>
+                    <td class="text-nowrap">{{ booking.return_out_time }}</td> -->
+                </tr>
+            </form>
+            {% endfor %}
+            
+        </tbody> 
+        </table>
+        </div>
+    <!-- </div> -->
+<!-- </div> -->
+        {% else %}
+            <h1 class="text-center text-secondary mt-3"> ไม่พบข้อมูล </h1>
+        {% endif %}
+
+        
+    {% endblock %}
+    </body>
+
+</html>

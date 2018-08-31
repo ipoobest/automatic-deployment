@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block title %} Time {% endblock %}
+        
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'css/style-table.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style-edit-table.css' %}" />
+    <script src="{% static 'js/fixed-header.js' %}"></script>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script>
+        window.setTimeout(function() {
+            $(".save-msg").fadeTo(500, 0).slideUp(500, function(){
+                $(this).remove(); 
+            });
+        }, 1500);
+
+        $(function() {
+            $("#table-cont").css({top: $("#filter-date").offset().top + 60 })
+        });
+
+
+        $(function() {
+            $("button#print").click(function(){
+                
+                $("input.pk").each(function() {
+                    // var input = $("<input>")
+                    //                 .attr("type", "hidden")
+                    //                 .attr("name", "pk").val($(this).val());
+                        $('form#PrintTime').append($(this)); 
+                });
+                
+                    $('form#PrintTime').submit();
+                    // return false;
+            });
+        });
+    </script>
+{% endblock %}
+        
+{% block content %}
+<br>
+    <div id="filter-date" class="container col-12">
+        <div class="row">
+            <div class="col">
+                <form id="PrintTime" method="POST" action="{% url 'booking-print-time' %}">
+                    {% csrf_token %}
+                    <button id="print" class="btn btn-primary" ><i class="fa fa-print"></i>&nbsp;Print</button>
+                </form>
+            </div>
+            <div class="col text-right">
+                {% for message in messages %}
+                    <div class="save-msg mr-2 pt-2 text-secondary d-inline"><i class="fa fa-spinner fa-pulse"></i>&nbsp;{{ message }}</div>
+                {% endfor %}
+                <button class="btn btn-danger mr-1" onclick="document.forms['TableFilter'].submit();"><i class="fa fa-sign-out"></i>&nbsp;Exit</button>
+                <form id="TableFilter" method="GET" action="{% url 'booking-table' %}" style="display:none;">
+                    <input type="hidden" name="date" value="{{ date }}">
+                    <input type="hidden" name="filter_by" value="{{ filter_by }}">
+                </form>
+                <button class="btn btn-success" onclick="document.forms['TimeForm'].submit();"><i class="fa fa-save"></i>&nbsp;Save</button>
+            </div>
+        </div>
+    </div>
+        {% if bookings %}
+        <!-- <div class='table-cont' id='table-cont'> -->
+    <!-- <div class="container"> -->
+        <!-- <div class="row"> -->
+            <div id='table-cont' class="table-cont table-responsive"> 
+        <table class="w-100 time">
+            <thead class="text-nowrap bg-lightgray">
+            <!-- <th rowspan=2>TIME</th> -->
+            <th rowspan=2>DATE</th>
+            <th rowspan=2>PRINCIPAL</th>
+            <th rowspan=2>SHIPPER</th>
+            <th rowspan=2>AGENT</th>
+            <th rowspan=2>SIZE</th>
+            <th rowspan=2 class="px-2">BOOKING</th>
+
+            <th rowspan=2>TR</th>
+            <th rowspan=2>FM</th>
+            <th rowspan=2>TR</th>
+            <th rowspan=2>FACTORY</th>
+            <th rowspan=2>TR</th>
+            <th rowspan=2>TR</th>
+            <th rowspan=2>TO</th>
+
+            <th rowspan=2 class="px-2">CONTAINER NO</th>
+            <th rowspan=2 class="px-4">SEAL NO</th>
+            <!-- <th rowspan=2 colspan=2>CLOSING (DATE / TIME)</th> -->
+
+            <!-- <th class="px-5">REF.</th>
+            <th class="px-5">REMARK</th> -->
+            <th rowspan="2">เลขที่ใบงาน</th>
+
+            <!-- <th rowspan="2">PICK UP</th>
+            <th rowspan="2">FACTORY</th>
+            <th rowspan="2">RETURN</th> -->
+
+            <th colspan="2">ลานรับตู้</th>
+            <th colspan="4">Factory</th>
+            <th colspan="2">ลานส่งตู้</th>
+            <tr>
+                <th>In</th>
+                <th>Out</th>
+
+                <th>In</th>
+                <th>Start</th>
+                <th>Finish</th>
+                <th>Out</th>
+
+                <th>In</th>
+                <th>Out</th>
+            </tr>
+        </thead> 
+        <tbody> 
+            <form id="TimeForm" name="time-form" method="POST" action="{% url 'booking-time-save' %}">
+                {% csrf_token %}
+            {% for booking in bookings %}
+            <!-- <form name="time-form{{ booking.pk }}" method="POST" action="{% url 'booking-time-save' %}">
+                    {% csrf_token %} -->
+            <input type="hidden" name="pk" class="pk" value="{{ booking.pk }}">
+            <input type="hidden" name="date_filter" value="{{ date }}">
+            <input type="hidden" name="filter_by" value="{{ filter_by }}">
+            {% if booking.cancel == '1' %}
+                <tr class="bg-secondary">
+            {% elif booking.closing_date < today.date and not booking.return_tr %}
+                <tr class="bg-danger">
+            {% elif booking.closing_date <= tmr.date and not booking.return_tr %}
+                <tr class="alert-danger">
+            {% elif booking.date <= today.date and not booking.return_tr %}
+                <tr class="alert-warning">
+            {% else %}
+                <tr>
+            {% endif %}
+                    <!-- <td>{{ booking.time }}</td> -->
+                    
+                    <td class="text-nowrap px-3">{{ booking.date | date:'d/m/y' }}</td>
+                    <td class="no-collapsable text-left px-2"><div class="long-text">{{ booking.principal }}</div></td>
+                    <td class="no-collapsable text-left px-2"><div class="long-text">{{ booking.shipper }}</div></td>
+                    <td class="no-collapsable text-left px-2"><div class="long-text">{{ booking.agent }}</div></td>
+                    <td class="text-nowrap">{{ booking.size }}</td>
+                    {% if booking.cancel == '1' %}
+                        <td class="bg-secondary text-nowrap">
+                    {% else %}
+                        <td style="background-color: {{ booking.booking_color }}" class="text-nowrap">
+                    {% endif %}
+                            {{ booking.booking_no }}
+                        </td>
+
+                    <td>{{ booking.pickup_tr }}</td>
+                    <td>{{ booking.pickup_from }}</td>
+                    <td>{{ booking.forward_tr }}</td>
+                    <td>{{ booking.factory }}</td>
+                    <td>{{ booking.backward_tr }}</td>
+                    <td>{{ booking.return_tr }}</td>
+                    <td>{{ booking.return_to }}</td>
+
+                    <td>{{ booking.container_no }}</td>
+                    <td>{{ booking.seal_no }}</td>
+                    <!-- <td class="text-nowrap">{{ booking.vessel }}</td>
+                    <td class="text-nowrap">{{ booking.port }}</td> -->
+                    <!-- <td class="text-nowrap">{{ booking.closing_date }}</td>
+                    <td>{{ booking.closing_time }}</td> -->
+
+                    <!-- <td><input name="ref" class="form-control" value="{{ booking.ref }}" onchange="this.form.submit();" autocomplete=off></td>
+                    <td><textarea class="form-control" rows="1" name="remark" style="padding: 2px 4px; font-size: 12px;" onchange="this.form.submit();">{{ booking.remark }}</textarea></td> -->
+
+                    <td class="text-nowrap">{{ booking.work_id }}</td>
+
+                    <!-- <td class="text-nowrap">{{ booking.pickup_date }}</td>
+
+                    {% if booking.factory_date != booking.return_date %}
+                    <td class="text-nowrap bg-info">
+                    {% else %}
+                    <td class="text-nowrap">
+                    {% endif %}
+                        {{ booking.factory_date }}
+                    </td> -->
+                    
+
+                    <!-- <td class="text-nowrap">{{ booking.return_date }}</td> -->
+                    {% load split %}
+                    <td>
+                        {% with booking.pickup_in_time|split:"//" as pickup_in_time %}
+                        {% if pickup_in_time.0 %}
+                            <input type="date" name="pickup_in_time_1" class="form-control" value="{{ pickup_in_time.0 }}" autocomplete=off>
+                        {% else %}
+                            <input type="date" name="pickup_in_time_1" class="form-control" value="{{ booking.pickup_date | date:'Y-m-d'}}" autocomplete=off>
+                        {% endif %}
+                        <input type="time" name="pickup_in_time_2" class="form-control" value="{{ pickup_in_time.1 }}" autocomplete=off>
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with booking.pickup_out_time|split:"//" as pickup_out_time %}
+                        {% if pickup_out_time.0 %}
+                            <input type="date" name="pickup_out_time_1" class="form-control" value="{{ pickup_out_time.0 }}" autocomplete=off>
+                        {% else %}
+                            <input type="date" name="pickup_out_time_1" class="form-control" value="{{ booking.pickup_date | date:'Y-m-d'}}" autocomplete=off>
+                        {% endif %}
+                        <input type="time" name="pickup_out_time_2" class="form-control" value="{{ pickup_out_time.1 }}" autocomplete=off>
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with booking.factory_in_time|split:"//" as factory_in_time %}
+                        {% if factory_in_time.0 %}
+                            <input type="date" name="factory_in_time_1" class="form-control" value="{{ factory_in_time.0 }}" autocomplete=off>
+                        {% else %}
+                            <input type="date" name="factory_in_time_1" class="form-control" value="{{ booking.factory_date | date:'Y-m-d'}}" autocomplete=off>
+                        {% endif %}
+                        <input type="time" name="factory_in_time_2" class="form-control" value="{{ factory_in_time.1 }}" autocomplete=off>
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with booking.factory_load_start_time|split:"//" as factory_load_start_time %}
+                        {% if factory_load_start_time.0 %}
+                            <input type="date" name="factory_load_start_time_1" class="form-control" value="{{ factory_load_start_time.0 }}" autocomplete=off>
+                        {% else %}
+                            <input type="date" name="factory_load_start_time_1" class="form-control" value="{{ booking.factory_date | date:'Y-m-d'}}" autocomplete=off>
+                        {% endif %}
+                        <input type="time" name="factory_load_start_time_2" class="form-control" value="{{ factory_load_start_time.1 }}" autocomplete=off>
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with booking.factory_load_finish_time|split:"//" as factory_load_finish_time %}
+                        {% if factory_load_finish_time.0 %}
+                            <input type="date" name="factory_load_finish_time_1" class="form-control" value="{{ factory_load_finish_time.0 }}" autocomplete=off>
+                        {% else %}
+                            <input type="date" name="factory_load_finish_time_1" class="form-control" value="{{ booking.factory_date | date:'Y-m-d'}}" autocomplete=off>
+                        {% endif %}
+                        <input type="time" name="factory_load_finish_time_2" class="form-control" value="{{ factory_load_finish_time.1 }}" autocomplete=off>
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with booking.factory_out_finish|split:"//" as factory_out_finish %}
+                        {% if factory_out_finish.0 %}
+                            <input type="date" name="factory_out_finish_1" class="form-control" value="{{ factory_out_finish.0 }}" autocomplete=off>
+                        {% else %}
+                            <input type="date" name="factory_out_finish_1" class="form-control" value="{{ booking.factory_date | date:'Y-m-d'}}" autocomplete=off>
+                        {% endif %}
+                        <input type="time" name="factory_out_finish_2" class="form-control" value="{{ factory_out_finish.1 }}" autocomplete=off>
+                        {% endwith %}
+                    </td>
+
+                    {% if booking.factory_date != booking.return_date %}
+                    <td class="bg-info">
+                    {% else %}
+                    <td>
+                    {% endif %}
+                        {% with booking.return_in_time|split:"//" as return_in_time %}
+                        {% if return_in_time.0 %}
+                            <input type="date" name="return_in_time_1" class="form-control" value="{{ return_in_time.0 }}" autocomplete=off>
+                        {% else %}
+                            <input type="date" name="return_in_time_1" class="form-control" value="{{ booking.return_date | date:'Y-m-d'}}" autocomplete=off>
+                        {% endif %}
+                        <input type="time" name="return_in_time_2" class="form-control" value="{{ return_in_time.1 }}" autocomplete=off>
+                        {% endwith %}
+                    </td>
+
+                    {% if booking.cancel == '1' %}
+                    <td class="bg-secondary">
+                    {% elif booking.factory_date != booking.return_date %}
+                    <td class="bg-info">
+                    {% else %}
+                    <td>
+                    {% endif %}
+                        {% with booking.return_out_time|split:"//" as return_out_time %}
+                        {% if return_out_time.0 %}
+                            <input type="date" name="return_out_time_1" class="form-control" value="{{ return_out_time.0 }}" autocomplete=off>
+                        {% else %}
+                            <input type="date" name="return_out_time_1" class="form-control" value="{{ booking.return_date | date:'Y-m-d'}}" autocomplete=off>
+                        {% endif %}
+                        <input type="time" name="return_out_time_2" class="form-control" value="{{ return_out_time.1 }}" autocomplete=off>
+                        {% endwith %}
+                    </td>
+                </tr>
+            
+            {% endfor %}
+        </form>
+        </tbody> 
+        </table>
+        </div>
+    <!-- </div> -->
+<!-- </div> -->
+        {% else %}
+            <h1 class="text-center text-secondary mt-3"> ไม่พบข้อมูล </h1>
+        {% endif %}
+
+        
+    {% endblock %}
+    </body>
+
+</html>

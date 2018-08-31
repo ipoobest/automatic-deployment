@@ -1,0 +1,381 @@
+{% load staticfiles %}
+
+
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+  <title>Order Template</title>
+  
+  <link rel="stylesheet" href="{{ static_dir }}\css\style-pdf.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <style type='text/css'>
+    /* Size and frame */
+    @page {
+      /* size: a4 portrait; */
+      size: 8.5in 11in;
+      margin: 10pt;
+      @frame header_frame {           /* Static Frame */
+        -pdf-frame-content: header_content;
+        left: 0.5in; width: 7.5in; top: 5pt; height: auto;
+      }
+      @frame content_frame {          /* Content Frame */
+      -pdf-frame-content: left_content;
+        left: 0.5in; width: 3.75in; top: 90pt; height: auto;
+      }
+      @frame content_frame {          /* Content Frame */
+      -pdf-frame-content: right_content;
+      left: 4.25in; width: 3.75in; top: 90pt; height: auto; 
+      }
+      @frame content_frame {          /* Content Frame */
+      -pdf-frame-content: table_content;
+      left: 0.5in; width: 7.5in; top: 210pt; height: auto; 
+      }
+    }
+
+    @font-face {
+      font-family: THSarabunNew; 
+      src: url("{{ static_dir }}\fonts\thsarabunnew-webfont.ttf"); 
+    } 
+
+    html {
+      font-family: THSarabunNew;
+    }
+
+  </style>
+
+</head>
+
+<body>
+    {% block content %}
+    {% if booking %}
+
+    <div id="header_content"><img src="{{ static_dir }}\images\head.jpg" style="width:100%; height:auto;"></div>
+    <!-- HTML Content -->
+    <div id="left_content">
+        <table>
+            <tr class="big">
+              <td>วันที่</td>
+              <td colspan=3 class="center text-blue">{{ booking.date | date:'d - m - Y' }}</td>
+            </tr>
+            <tr class="small" >
+              <td>DATE</td>
+              <td colspan=3 class="center">...........................................................</td>
+            </tr>
+            <tr class="big">
+              <td>พนักงานขับรถชื่อ</td>
+              <td colspan=3></td>
+            </tr>
+            <tr class="small" >
+              <td>DRIVER NAME</td>
+              <td colspan=3 class="center">...........................................................</td>
+            </tr>
+            <tr class="big">
+              <td colspan=2>ทะเบียน / เบอร์รถ</td>
+              <td colspan=2></td>
+            </tr>
+            <tr class="small" >
+              <td>TRUCK NO.</td>
+              <td colspan=3 class="center">...........................................................</td>
+            </tr>
+            <tr class="big">
+              <td class="center"><img src="{{ static_dir }}\images\square.png" style="width:14px; height:auto;"></td>
+              <td>ไปกลับ</td>
+              <td class="center"><img src="{{ static_dir }}\images\square.png" style="width:14px; height:auto;"></td>
+              <td>เที่ยวเดียว</td>
+            </tr>
+            
+            <tr class="big">
+              <td class="center"><img src="{{ static_dir }}\images\square.png" style="width:14px; height:auto;"></td>
+              <td>ไปแจ้งกลับ</td>
+              <td class="center"><img src="{{ static_dir }}\images\square.png" style="width:14px; height:auto;"></td>
+              <td>ซอยตู้</td>
+            </tr>
+            <!-- {% endif %} -->
+            </table>
+    </div>
+
+    <!-- HTML Content -->
+    <div id="right_content">
+        <table>
+            <!-- {% if booking %} -->
+            <tr class="big">
+                <td></td><td></td><td></td>
+              <td width=60px class="text-right">เลขที่</td>
+              <td width=150px class="center text-blue">{{ booking.work_id }}</td>
+            </tr>
+            <tr class="small">
+              <td colspan=5></td>
+            </tr>
+            <tr class="big">
+                <td></td><td></td>
+              <td class="text-right">ราคา</td>
+              <td colspan=2 class="left">..............................</td>
+            </tr>
+            <tr class="small">
+              <td colspan=5></td>
+            </tr>
+            <tr class="big">
+              <td>เบอร์หาง</td>
+              <td></td>
+              <td class="text-right">Gate รับตู้</td>
+              <td colspan=2 class="left">..............................</td>
+            </tr>
+            <tr class="small">
+              <td>CHASSIS NO.</td>
+              <td class="center">..............................</td>
+              <td></td><td colspan=2></td>
+            </tr>
+            <tr class="big">
+              <td>ทะเบียน</td>
+              <td></td>
+              <td class="right">Gate คืนตู้</td>
+              <td colspan=2 class="left">..............................</td>
+            </tr>
+            <tr class="big">
+              <td>Shipment</td>
+              <td></td>
+              <td></td><td colspan=2></td> 
+            </tr>
+            <tr class="big">
+              <td>TMP.</td>
+              <td></td>
+              <td class="text-right">อื่น ๆ</td>
+              <td colspan=2 class="left">..............................</td>
+            </tr>
+            
+            </table>
+        </div>
+
+        <div id="table_content">
+          <table class="border-out">
+            <tr class="center pt-5">
+              <td colspan=4 class="border-r">งานเที่ยวไป</td>
+              <td colspan=4>งานเที่ยวกลับ</td>
+            </tr>
+            <tr class="small text-center">
+              <td colspan=4 class="border-r"><u>FORWORD TRIP</u></td>
+              <td colspan=4><u>BACKWORD TRIP</u></td>
+            </tr>
+            <tr class="big">
+              <td class="pl-5">หมายเลขตู้</td>
+              <td colspan=3 class="center text-red pr-5 border-r">{{ booking.container_no }}</td>
+              <td class="pl-5">หมายเลขตู้</td>
+              <td colspan=3 class="center text-red pr-5">{{ booking.container_no }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5">CONTR NO.</td>
+              <td colspan=3 class="center pr-5 border-r">......................................................................</td>
+              <td class="pl-5">CONTR NO.</td>
+              <td colspan=3 class="center pr-5">......................................................................</td>
+            </tr>
+            <tr class="big">
+              <td class="pl-5">ขนาดตู้</td>
+              <td class="center text-blue">{{ booking.size }}</td>
+              <td class="text-center">หมายเลขซีล</td>
+              <td class="center text-red pr-5 border-r">{{ booking.seal_no }}</td>
+              <td class="pl-5">ขนาดตู้</td>
+              <td class="center text-blue">{{ booking.size }}</td>
+              <td class="text-center">หมายเลขซีล</td>
+              <td class="center text-red pr-5">{{ booking.seal_no }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5">SIZE</td>
+              <td class="center">.......................</td>
+              <td class="text-center">SEAL NO.</td>
+              <td class="center pr-5 border-r">.......................</td>
+              <td class="pl-5">SIZE</td>
+              <td class="center">.......................</td>
+              <td class="text-center">SEAL NO.</td>
+              <td class="center pr-5">.......................</td>
+            </tr>
+            <tr class="big">
+              <td class="pl-5">Agent Name</td>
+              <td colspan=3 class="center text-blue pr-5 border-r">{{ booking.agent }}</td>
+              <td class="pl-5">Agent Name</td>
+              <td colspan=3 class="center text-blue pr-5">{{ booking.agent }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5"></td>
+              <td colspan=3 class="center pr-5 border-r">......................................................................</td>
+              <td class="pl-5"></td>
+              <td colspan=3 class="center pr-5">......................................................................</td>
+            </tr>
+            <tr class="big">
+              <td class="pl-5">หมายเลขจองเรือ</td>
+              <td colspan=3 class="center text-blue pr-5 border-r">{{ booking.booking_no }}</td>
+              <td class="pl-5">หมายเลขจองเรือ</td>
+              <td colspan=3 class="center text-blue pr-5">{{ booking.booking_no }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5">BOOKING NO.</td>
+              <td colspan=3 class="center pr-5 border-r">......................................................................</td>
+              <td class="pl-5">BOOKING NO.</td>
+              <td colspan=3 class="center pr-5">......................................................................</td>
+            </tr>
+            <tr class="big">
+              <td class="pl-5">งานบรรทุก</td>
+              <td colspan=7 class="center text-blue pr-5">{{ booking.shipper }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5">FOR</td>
+              <td colspan=7 class="center pr-5">..................................................................................................................................................................................</td>
+            </tr>
+            <tr class="big">
+              <td class="pl-5">จาก</td>
+              <td class="center text-blue">{{ booking.pickup_from }}</td>
+              <td class="text-center">ถึง</td>
+              <td class="center text-blue pr-5 border-r">{{ booking.factory }}</td>
+              <td class="pl-5">จาก</td>
+              <td class="center text-blue">{{ booking.factory }}</td>
+              <td class="text-center">ถึง</td>
+              <td class="center text-blue pr-5">{{ booking.return_to }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5">FROM</td>
+              <td class="center">.......................</td>
+              <td class="text-center">TO</td>
+              <td class="center pr-5 border-r">.......................</td>
+              <td class="pl-5">FROM</td>
+              <td class="center">.......................</td>
+              <td class="text-center">TO</td>
+              <td class="center pr-5">.......................</td>
+            </tr>
+            <tr class="big">
+              <td width=350px class="pl-5">วันปฏิบัติงาน</td>
+              <td width=350px class="center text-blue">{{ booking.pickup_date | date:'d-m-Y' }}</td>
+              <td width=250px class="text-center">ถึง</td>
+              <td width=350px class="center text-blue pr-5 border-r">{{ booking.factory_date | date:'d-m-Y' }}</td>
+              <td width=350px class="pl-5">วันปฏิบัติงาน</td>
+              <td width=350px class="center text-blue">{{ booking.factory_date | date:'d-m-Y' }}</td>
+              <td width=250px class="text-center">ถึง</td>
+              <td width=350px class="center text-blue pr-5">{{ booking.return_date | date:'d-m-Y' }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5">Date of Work</td>
+              <td colspan=3 class="center pr-5 border-r">......................................................................</td>
+              <td class="pl-5">Date of Work</td>
+              <td colspan=3 class="center pr-5">......................................................................</td>
+            </tr>
+            <tr class="big">
+              <td class="pl-5">NDD</td>
+              <td class="center">........................</td>
+              <td class="text-center">ลานรับตู้</td>
+              <td class="center pr-5 border-r">............/............</td>
+              <td class="pl-5">เริ่มบรรจุ</td>
+              <td class="center">........................</td>
+              <td class="text-center">บรรจุเสร็จ</td>
+              <td class="center pr-5">........................</td>
+            </tr>
+            <tr class="small pr-5 pl-5">
+              <td colspan=4 class="border-r"></td>
+            </tr>
+            <tr class="big">
+              <td class="pl-5">ลานรับตู้/NDD</td>
+              <td class="center">........................</td>
+              <td class="text-center">ถึงโรงงาน</td>
+              <td class="center pr-5 border-r">........................</td>
+              <td class="pl-5">ออกจากโรงงาน</td>
+              <td class="center">........................</td>
+              <td class="text-center">ลานคืนตู้</td>
+              <td class="center pr-5">............/............</td>
+            </tr>
+            <tr class="small pr-5 pl-5">
+                <td colspan=4 class="border-r"></td>
+              </tr>
+            <tr class="big">
+              <td class="pl-5">ชื่อเรือ</td>
+              <td colspan=3 class="center text-blue pr-5 border-r">{{ booking.vessel }}</td>
+              <td class="pl-5">ชื่อเรือ</td>
+              <td colspan=3 class="center text-blue pr-5">{{ booking.vessel }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5">Vessel name</td>
+              <td colspan=3 class="center pr-5 border-r">......................................................................</td>
+              <td class="pl-5">Vessel name</td>
+              <td colspan=3 class="center pr-5">......................................................................</td>
+            </tr>
+            <tr class="big">
+              <td colspan=2 class="center pl-5">เวลาปิดรับตู้</td>
+              <td colspan=2 class="center text-red pr-5 border-r">{{ booking.closing_date | date:'d-m-Y' }}&nbsp;&nbsp;&nbsp;{{ booking.closing_time }}</td>
+              <td colspan=2 class="center pl-5">เวลาปิดรับตู้</td>
+              <td colspan=2 class="center text-red pr-5">{{ booking.closing_date | date:'d-m-Y' }}&nbsp;&nbsp;&nbsp;{{ booking.closing_time }}</td>
+            </tr>
+            <tr class="small">
+              <td colspan=2 class="pl-5"></td>
+              <td colspan=2 class="center pr-5 border-r">.............................................</td>
+              <td colspan=2 class="pl-5"></td>
+              <td colspan=2 class="center pr-5">.............................................</td>
+            </tr>
+
+            <tr class="big">
+              <td class="pl-5">Ref.</td>
+              <td colspan=7 class="text-blue pr-5">{{ booking.ref }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5">&nbsp;</td>
+              <td colspan=7 class="center pr-5">..................................................................................................................................................................................</td>
+            </tr>
+            <tr class="big">
+              <td class="pl-5">หมายเหตุ</td>
+              <td colspan=7 class="text-blue pr-5">{{ booking.remark }}</td>
+            </tr>
+            <tr class="small">
+              <td class="pl-5">REMARK</td>
+              <td colspan=7 class="center pr-5">..................................................................................................................................................................................</td>
+            </tr>
+            <tr class="big">
+              <td colspan=2 class="center pl-5"><img src="{{ static_dir }}\images\square.png" style="width:14px; height:auto;">&nbsp;สภาพตู้สะอาด</td>
+              <td colspan=2 class="center"><img src="{{ static_dir }}\images\square.png" style="width:14px; height:auto;">&nbsp;พื้นตู้สะอาด,ไม่มีเสี้ยน,คราบน้ำมัน</td>
+              <td colspan=2 class="center"><img src="{{ static_dir }}\images\square.png" style="width:14px; height:auto;">&nbsp;ตู้ไม่เป็นสนิม</td>
+              <td colspan=2 class="center pr-5"><img src="{{ static_dir }}\images\square.png" style="width:14px; height:auto;">&nbsp;สภาพตู้ไม่บุบยุบ,ฉีกขาด</td>
+            </tr>
+            <tr class="small pr-5-left border-bottom">
+              <td colspan=8></td>
+            </tr>
+            </table>
+          <table>
+            <tr class="text-center text-footer">
+              <td colspan=4>ได้รับตู้คอนเทนเนอร์ในสภาพดีและสินค้าในสภาพเรียบร้อยแล้ว</td>
+              <td colspan=4>Verified to recive container in good condition and seal in tact</td>
+            </tr>
+            <tr>
+              <td colspan=8 style="height:20px;"></td>
+            </tr>
+            <tr class="text-center text-footer">
+              <td colspan=8>ลายเซ็นผู้ว่าจ้างหรือตัวแทน</td>
+            </tr>
+            <tr class="small text-center">
+              <td colspan=8>AGENT/SHIPPER/CONSIGNEE 'S SIGNATURE</td>
+            </tr>
+            <tr class="text-right text-footer">
+              <td colspan=3>วันที่</td>
+              <td colspan=5></td>
+            </tr>
+            <tr class="small">
+                <td colspan=3 class="text-right">DATE</td>
+                <td colspan=2 class="center">...................................................</td>
+                <td colspan=3></td>
+            </tr>
+          </table>
+          <div class="mt-5">
+            <table width=80%>
+              <tr>
+                <td width=20% style="vertical-align: top;">
+                  ออกใบเสร็จ
+                </td>
+                <td class="text-12 text-blue">
+                  {{ address | linebreaks }}
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        
+        
+        {% endif %}
+        {% endblock %}
+
+
+</body>
+</html>
