@@ -12,7 +12,7 @@ jobs:
           name: Print the Current Time 5s
           command: date
       - run: ssh-keyscan -H 178.128.105.16 >> ~/.ssh/known_hosts
-      - run: git push hoikhong@178.128.105.16:ndd-repository master
+      - run: git push root@178.128.105.16:ndd-repository master
 
     
         
