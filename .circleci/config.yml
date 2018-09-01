@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: debian:stretch
+      - image: python:3.7
     steps:
       - checkout
       - run:
@@ -11,8 +11,5 @@ jobs:
       - run:
           name: Print the Current Time
           command: date
-      - run: apt-get install -y sudo 
-      - run: ls -al /bin/sh && sudo rm /bin/sh && sudo ln -s /bin/bash /bin/sh && ls -al /bin/sh    
-      - run:
-          name: push to production    
-          command: git push root@178.128.105.16:ndd-production master
+      - run: git push root@178.128.105.16:ndd-production master
+        
